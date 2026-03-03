@@ -1,10 +1,12 @@
 package com.newgaming.votacionGestor;
 
 import com.newgaming.votacionGestor.components.JwtFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -18,7 +20,7 @@ import java.util.List;
  *
  * <p>Define las reglas de acceso, la integración del filtro JWT y la configuración
  * de CORS. Esta clase es detectada automáticamente por Spring gracias a las
- * anotaciones {@link Configuration} y {@link EnableMethodSecurity}.</p>
+ * anotaciones {@link Configuration} y {@link EnableWebSecurity}.</p>
  *
  * <p>Responsabilidades principales:</p>
  * <ul>
@@ -38,23 +40,14 @@ import java.util.List;
  * funcionales propios, sino beans de configuración.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @Configuration
-@EnableMethodSecurity
+@EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
-
-    /**
-     * Constructor que inyecta el filtro JWT.
-     *
-     * @param jwtFilter filtro encargado de validar tokens JWT.
-     * @since 0.1
-     */
-    public SecurityConfig(JwtFilter jwtFilter) {
-        this.jwtFilter = jwtFilter;
-    }
+    @Autowired
+    private JwtFilter jwtFilter;
 
     /**
      * Configura la cadena de filtros de seguridad.
@@ -70,7 +63,7 @@ public class SecurityConfig {
      * @param http objeto de configuración de seguridad HTTP.
      * @return cadena de filtros configurada.
      * @throws Exception si ocurre un error durante la configuración.
-     * @since 0.1
+     * @since v0.1
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -98,7 +91,7 @@ public class SecurityConfig {
      * </ul>
      *
      * @return configuración de CORS aplicada a todas las rutas.
-     * @since 0.1
+     * @since v0.1
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

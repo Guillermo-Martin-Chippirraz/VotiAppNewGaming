@@ -1,10 +1,13 @@
 package com.newgaming.votacionGestor.controllers;
 
+import com.newgaming.votacionGestor.models.Administrador;
 import com.newgaming.votacionGestor.models.Empresa;
-import com.newgaming.votacionGestor.models.Evento;
+import com.newgaming.votacionGestor.services.AdministradorService;
 import com.newgaming.votacionGestor.services.EmpresaService;
-import com.newgaming.votacionGestor.services.EventoService;
+import com.newgaming.votacionGestor.services.EventoEmpresaService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -24,77 +27,92 @@ import org.springframework.web.bind.annotation.*;
  * evaluados por los jurados.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @RestController
 @RequestMapping("/api/empresa")
 public class EmpresaController {
 
     private final EmpresaService empresaService;
-    private final EventoService eventoService;
+    private final EventoEmpresaService eventoEmpresaService;
+    private final AdministradorService administradorService;
 
     /**
      * Constructor por parámetros.
      * Inicializa el controlador con los servicios necesarios para gestionar
-     * empresas y eventos.
+     * empresas, asignaciones a eventos y operaciones realizadas por administradores.
      *
      * <ol>
      *     <li>Asigna la dependencia <code>EmpresaService</code>.</li>
-     *     <li>Asigna la dependencia <code>EventoService</code>.</li>
+     *     <li>Asigna la dependencia <code>EventoEmpresaService</code>.</li>
+     *     <li>Asigna la dependencia <code>AdministradorService</code>.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param empresaService servicio encargado de la gestión de empresas.
-     * @param eventoService servicio encargado de la gestión de eventos.
+     * @param eventoService servicio encargado de la gestión de asignaciones empresa–evento.
+     * @param administradorService servicio encargado de operaciones realizadas por administradores.
      */
-    public EmpresaController(EmpresaService empresaService, EventoService eventoService) {
+    public EmpresaController(EmpresaService empresaService, EventoEmpresaService eventoService, AdministradorService administradorService) {
         this.empresaService = empresaService;
-        this.eventoService = eventoService;
+        this.eventoEmpresaService = eventoService;
+        this.administradorService = administradorService;
     }
 
     /**
      * Endpoint para crear una nueva empresa.
+     * Solo accesible para usuarios con rol ADMIN.
      *
      * <ol>
-     *     <li>Recibe un objeto Empresa desde el cuerpo de la petición.</li>
-     *     <li>Envía la entidad al servicio para ser registrada en la base de datos.</li>
+     *     <li>Obtiene el username del administrador autenticado desde el token JWT.</li>
+     *     <li>Recupera la entidad <code>Administrador</code> asociada a dicho username.</li>
+     *     <li>Asigna al administrador como responsable del registro de la empresa.</li>
+     *     <li>Envía la entidad al servicio para ser almacenada en la base de datos.</li>
      *     <li>Devuelve la empresa creada como respuesta.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param empresa entidad Empresa a registrar.
      * @return empresa creada.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Empresa> crearEmpresa(@RequestBody Empresa empresa){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println(">>> Username del token = " + username);
+        Administrador admin = administradorService.obtenerPorUsername(username);
+        empresa.setAdminRegistro(admin);
         return ResponseEntity.ok(empresaService.crearEmpresa(empresa));
     }
 
     /**
      * Endpoint para asignar una empresa a un evento.
+     * Solo accesible para usuarios con rol ADMIN.
      *
      * <ol>
-     *     <li>Recibe los IDs de la empresa y del evento mediante la URL.</li>
-     *     <li>Obtiene ambas entidades desde sus respectivos servicios.</li>
-     *     <li>Asigna la empresa al evento mediante el servicio correspondiente.</li>
+     *     <li>Obtiene el username del administrador autenticado desde el token JWT.</li>
+     *     <li>Recupera la entidad <code>Administrador</code> asociada a dicho username.</li>
+     *     <li>Recibe los IDs de empresa y evento mediante la URL.</li>
+     *     <li>Solicita al servicio correspondiente la asignación empresa–evento.</li>
      *     <li>Devuelve un mensaje confirmando la operación.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param idEmpresa identificador de la empresa.
      * @param idEvento identificador del evento.
      * @return mensaje indicando que la empresa fue asignada correctamente.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{idEmpresa}/asignar/{idEvento}")
-    public ResponseEntity<String> asignarEmpresaAEvento(
+    public ResponseEntity<?> asignarEmpresaAEvento(
             @PathVariable Long idEmpresa,
             @PathVariable Long idEvento) {
 
-        Empresa empresa = empresaService.obtenerPorId(idEmpresa);
-        Evento evento = eventoService.obtenerPorId(idEvento);
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Administrador admin = administradorService.obtenerPorUsername(username);
 
-        empresaService.asignarEmpresaAEvento(empresa, evento);
+        eventoEmpresaService.asignarEmpresa(idEvento, idEmpresa);
 
-        return ResponseEntity.ok("Empresa asignada al evento");
+        return ResponseEntity.ok("Empresa asignada correctamente al evento");
     }
 }

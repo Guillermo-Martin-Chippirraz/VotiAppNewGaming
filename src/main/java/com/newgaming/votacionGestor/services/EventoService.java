@@ -2,9 +2,13 @@ package com.newgaming.votacionGestor.services;
 
 import com.newgaming.votacionGestor.models.Administrador;
 import com.newgaming.votacionGestor.models.Evento;
+import com.newgaming.votacionGestor.repositories.EmpresaRepository;
 import com.newgaming.votacionGestor.repositories.EventoRepository;
 import com.newgaming.votacionGestor.repositories.EventoUsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 /**
  * Servicio encargado de gestionar la lógica de negocio relacionada con los eventos.
@@ -26,34 +30,26 @@ import org.springframework.stereotype.Service;
  * componente de servicio dentro del contexto de la aplicación.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @Service
 public class EventoService {
 
-    private final EventoRepository eventoRepository;
-    private final EventoUsuarioRepository eventoUsuarioRepository;
+    @Autowired
+    private EventoRepository eventoRepository;
 
-    /**
-     * Constructor que inyecta los repositorios necesarios para operar con eventos
-     * y sus relaciones con usuarios.
-     *
-     * @param eventoRepository repositorio de eventos.
-     * @param eventoUsuarioRepository repositorio de relaciones Evento-Usuario.
-     * @since 0.1
-     */
-    public EventoService(EventoRepository eventoRepository,
-                         EventoUsuarioRepository eventoUsuarioRepository) {
-        this.eventoRepository = eventoRepository;
-        this.eventoUsuarioRepository = eventoUsuarioRepository;
-    }
+    @Autowired
+    private EventoUsuarioRepository eventoUsuarioRepository;
+
+    @Autowired
+    private EmpresaRepository empresaRepository;
 
     /**
      * Crea un nuevo evento en el sistema.
      *
      * @param evento evento a registrar.
      * @return evento registrado.
-     * @since 0.1
+     * @since v0.1
      */
     public Evento crearEvento(Evento evento) {
         return eventoRepository.save(evento);
@@ -62,48 +58,60 @@ public class EventoService {
     /**
      * Habilita un evento y registra qué administrador realizó la acción.
      *
-     * <p>Este método:</p>
+     * <p>Este método actualiza el estado del evento a <code>HABILITADO</code> y deja constancia
+     * del administrador responsable de la acción. Además, actualiza la marca temporal de
+     * modificación para mantener la trazabilidad del registro.</p>
+     *
      * <ul>
-     *     <li>Obtiene el evento por su ID.</li>
-     *     <li>Actualiza su estado a "HABILITADO".</li>
-     *     <li>Registra el administrador que lo habilita.</li>
+     *     <li>Obtiene el evento mediante su identificador.</li>
+     *     <li>Modifica su estado a <code>HABILITADO</code>.</li>
+     *     <li>Registra el administrador que realizó la habilitación.</li>
+     *     <li>Actualiza la fecha y hora de modificación.</li>
      *     <li>Guarda los cambios en la base de datos.</li>
      * </ul>
      *
-     * @param idEvento identificador del evento.
-     * @param admin administrador que habilita el evento.
-     * @return evento actualizado.
-     * @since 0.1
+     * @param idEvento identificador del evento que se desea habilitar.
+     * @param admin administrador que realiza la acción.
+     * @return el evento actualizado y persistido.
+     * @since v0.1
      */
     public Evento habilitarEvento(Long idEvento, Administrador admin) {
         Evento evento = obtenerPorId(idEvento);
         evento.setEstado("HABILITADO");
         evento.setAdminHabilita(admin);
+        evento.setActualizadoEn(LocalDateTime.now());
+
         return eventoRepository.save(evento);
     }
 
     /**
      * Deshabilita un evento y registra qué administrador realizó la acción.
      *
-     * <p>Este método:</p>
+     * <p>Este método cambia el estado del evento a <code>DESHABILITADO</code> y registra
+     * al administrador responsable de la acción. También actualiza la marca temporal
+     * de modificación para mantener un historial claro de cambios.</p>
+     *
      * <ul>
-     *     <li>Obtiene el evento por su ID.</li>
-     *     <li>Actualiza su estado a "DESHABILITADO".</li>
-     *     <li>Registra el administrador que lo deshabilita.</li>
+     *     <li>Obtiene el evento mediante su identificador.</li>
+     *     <li>Modifica su estado a <code>DESHABILITADO</code>.</li>
+     *     <li>Registra el administrador que realizó la deshabilitación.</li>
+     *     <li>Actualiza la fecha y hora de modificación.</li>
      *     <li>Guarda los cambios en la base de datos.</li>
      * </ul>
      *
-     * @param idEvento identificador del evento.
-     * @param admin administrador que deshabilita el evento.
-     * @return evento actualizado.
-     * @since 0.1
+     * @param idEvento identificador del evento que se desea deshabilitar.
+     * @param admin administrador que realiza la acción.
+     * @return el evento actualizado y persistido.
+     * @since v0.1
      */
     public Evento deshabilitarEvento(Long idEvento, Administrador admin) {
         Evento evento = obtenerPorId(idEvento);
         evento.setEstado("DESHABILITADO");
         evento.setAdminDeshabilita(admin);
+        evento.setActualizadoEn(LocalDateTime.now());
         return eventoRepository.save(evento);
     }
+
 
     /**
      * Obtiene un evento por su identificador.
@@ -113,7 +121,7 @@ public class EventoService {
      * @param id identificador del evento.
      * @return evento correspondiente.
      * @throws RuntimeException si no se encuentra el evento.
-     * @since 0.1
+     * @since v0.1
      */
     public Evento obtenerPorId(Long id) {
         return eventoRepository.findById(id)

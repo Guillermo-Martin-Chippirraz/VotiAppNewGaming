@@ -1,6 +1,9 @@
 package com.newgaming.votacionGestor.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 
 /**
@@ -24,7 +27,7 @@ import java.time.LocalDateTime;
  * y permitir el análisis posterior de resultados.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @Entity
 @Table(name = "votacion")
@@ -38,7 +41,7 @@ public class Votacion {
      *     <li>Generado automáticamente mediante estrategia IDENTITY.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,7 +55,7 @@ public class Votacion {
      *     <li>Se almacena en la columna id_jurado.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @ManyToOne
     @JoinColumn(name = "id_jurado")
@@ -66,7 +69,7 @@ public class Votacion {
      *     <li>Se almacena en la columna id_empresa.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @ManyToOne
     @JoinColumn(name = "id_empresa")
@@ -80,7 +83,7 @@ public class Votacion {
      *     <li>Se almacena en la columna id_formulario.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @ManyToOne
     @JoinColumn(name = "id_formulario")
@@ -94,24 +97,28 @@ public class Votacion {
      *     <li>Se almacena en la columna id_evento.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @ManyToOne
     @JoinColumn(name = "id_evento")
     private Evento evento;
 
     /**
-     * Respuestas del jurado en formato JSONB.
+     * Respuestas del jurado almacenadas en formato JSONB.
      *
-     * <ol>
-     *     <li>Permite almacenar respuestas dinámicas y estructuradas.</li>
-     *     <li>Facilita su interpretación desde el backend y frontend.</li>
-     * </ol>
+     * <ul>
+     *     <li>Contiene todas las respuestas del formulario asociadas a la votación.</li>
+     *     <li>El formato JSONB permite almacenar estructuras dinámicas y complejas sin un esquema fijo.</li>
+     *     <li>Facilita la lectura y procesamiento tanto desde el backend como desde el frontend.</li>
+     *     <li>Permite realizar consultas eficientes sobre su contenido en bases de datos como PostgreSQL.</li>
+     * </ul>
      *
-     * @since 0.1
+     * @since v0.1
      */
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String respuestasJson;
+
 
     /**
      * Puntuación total obtenida a partir de las respuestas.
@@ -121,7 +128,7 @@ public class Votacion {
      *     <li>Puede ser calculada automáticamente según el formulario.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private Double puntuacionTotal;
 
@@ -133,14 +140,14 @@ public class Votacion {
      *     <li>Se asigna en el momento de registrar la votación.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private LocalDateTime fechaVotacion;
 
     /**
      * Obtiene el identificador único de la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @return ID de la votación.
      */
     public Long getIdVotacion() {
@@ -150,7 +157,7 @@ public class Votacion {
     /**
      * Establece el identificador único de la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @param idVotacion ID de la votación.
      */
     public void setIdVotacion(Long idVotacion) {
@@ -160,7 +167,7 @@ public class Votacion {
     /**
      * Obtiene el jurado que realizó la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @return jurado evaluador.
      */
     public Jurado getJurado() {
@@ -170,7 +177,7 @@ public class Votacion {
     /**
      * Establece el jurado que realizó la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @param jurado jurado evaluador.
      */
     public void setJurado(Jurado jurado) {
@@ -180,7 +187,7 @@ public class Votacion {
     /**
      * Obtiene la empresa evaluada.
      *
-     * @since 0.1
+     * @since v0.1
      * @return empresa evaluada.
      */
     public Empresa getEmpresa() {
@@ -190,7 +197,7 @@ public class Votacion {
     /**
      * Establece la empresa evaluada.
      *
-     * @since 0.1
+     * @since v0.1
      * @param empresa empresa evaluada.
      */
     public void setEmpresa(Empresa empresa) {
@@ -200,7 +207,7 @@ public class Votacion {
     /**
      * Obtiene el formulario utilizado en la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @return formulario asociado.
      */
     public Formulario getFormulario() {
@@ -210,7 +217,7 @@ public class Votacion {
     /**
      * Establece el formulario utilizado en la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @param formulario formulario asociado.
      */
     public void setFormulario(Formulario formulario) {
@@ -220,7 +227,7 @@ public class Votacion {
     /**
      * Obtiene el evento al que pertenece la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @return evento asociado.
      */
     public Evento getEvento() {
@@ -230,7 +237,7 @@ public class Votacion {
     /**
      * Establece el evento al que pertenece la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @param evento evento asociado.
      */
     public void setEvento(Evento evento) {
@@ -240,7 +247,7 @@ public class Votacion {
     /**
      * Obtiene las respuestas del jurado en formato JSON.
      *
-     * @since 0.1
+     * @since v0.1
      * @return respuestas en JSON.
      */
     public String getRespuestasJson() {
@@ -250,7 +257,7 @@ public class Votacion {
     /**
      * Establece las respuestas del jurado en formato JSON.
      *
-     * @since 0.1
+     * @since v0.1
      * @param respuestasJson respuestas en JSON.
      */
     public void setRespuestasJson(String respuestasJson) {
@@ -260,7 +267,7 @@ public class Votacion {
     /**
      * Obtiene la puntuación total de la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @return puntuación total.
      */
     public Double getPuntuacionTotal() {
@@ -270,7 +277,7 @@ public class Votacion {
     /**
      * Establece la puntuación total de la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @param puntuacionTotal puntuación total.
      */
     public void setPuntuacionTotal(Double puntuacionTotal) {
@@ -280,7 +287,7 @@ public class Votacion {
     /**
      * Obtiene la fecha en la que se realizó la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @return fecha de votación.
      */
     public LocalDateTime getFechaVotacion() {
@@ -290,11 +297,10 @@ public class Votacion {
     /**
      * Establece la fecha en la que se realizó la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @param fechaVotacion fecha de votación.
      */
     public void setFechaVotacion(LocalDateTime fechaVotacion) {
         this.fechaVotacion = fechaVotacion;
     }
 }
-

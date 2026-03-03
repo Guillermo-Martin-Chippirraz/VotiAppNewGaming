@@ -42,7 +42,7 @@ import java.util.List;
  * a los endpoints protegidos del sistema.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -60,7 +60,7 @@ public class JwtFilter extends OncePerRequestFilter {
      *     <li>Se asigna UsuarioService para buscar usuarios por username.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param jwtUtil utilidad para manejo de JWT.
      * @param usuarioService servicio para gestión de usuarios.
      */
@@ -70,27 +70,31 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Método principal del filtro.
-     * Procesa cada petición entrante, valida el token JWT si está presente
-     * y autentica al usuario dentro del contexto de Spring Security.
+     * Procesa cada petición HTTP entrante y aplica autenticación basada en JWT.
      *
+     * <p>Si la petición incluye un token válido en el encabezado Authorization,
+     * el filtro autentica al usuario y registra su identidad y rol en el contexto
+     * de Spring Security.</p>
+     *
+     * <p>Flujo del método:</p>
      * <ol>
-     *     <li>Obtiene el encabezado Authorization.</li>
+     *     <li>Lee el encabezado Authorization.</li>
      *     <li>Comprueba si contiene un token Bearer.</li>
      *     <li>Extrae el token y obtiene el username.</li>
      *     <li>Valida el token mediante JwtUtil.</li>
      *     <li>Si es válido:
      *         <ol>
-     *             <li>Busca el usuario en la base de datos.</li>
-     *             <li>Extrae el rol del token.</li>
-     *             <li>Crea un objeto Authentication con el usuario y su rol.</li>
+     *             <li>Busca el usuario real en la base de datos.</li>
+     *             <li>Obtiene el rol incluido en el token.</li>
+     *             <li>Crea un objeto Authentication con el username y su rol.</li>
+     *             <li>Adjunta el objeto Usuario completo como detalles.</li>
      *             <li>Registra la autenticación en el contexto de seguridad.</li>
      *         </ol>
      *     </li>
      *     <li>Continúa la cadena de filtros.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param request petición HTTP entrante.
      * @param response respuesta HTTP.
      * @param filterChain cadena de filtros de Spring Security.
@@ -119,11 +123,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
-                                    usuario,
+                                    usuario.getUsername(),
                                     null,
                                     List.of(authority)
                             );
 
+                    auth.setDetails(usuario);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }

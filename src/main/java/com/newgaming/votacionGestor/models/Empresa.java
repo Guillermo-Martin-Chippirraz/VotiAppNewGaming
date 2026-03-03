@@ -2,6 +2,8 @@ package com.newgaming.votacionGestor.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Clase que modela una empresa dentro del sistema de votación.
@@ -20,7 +22,7 @@ import java.time.LocalDateTime;
  * posteriormente serán evaluadas por los jurados.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @Entity
 @Table(name = "empresa")
@@ -34,7 +36,7 @@ public class Empresa {
      *     <li>Generado automáticamente mediante estrategia IDENTITY.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,7 +50,7 @@ public class Empresa {
      *     <li>Debe ser claro y reconocible para los jurados.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private String nombre;
 
@@ -60,7 +62,7 @@ public class Empresa {
      *     <li>Puede incluir historia, misión o detalles relevantes.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private String descripcion;
 
@@ -72,23 +74,26 @@ public class Empresa {
      *     <li>Debe ser una URL válida accesible por el cliente.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private String logoUrl;
 
     /**
      * Administrador que registró la empresa.
      *
-     * <ol>
-     *     <li>Relación ManyToOne: un administrador puede registrar varias empresas.</li>
-     *     <li>Se almacena en la columna id_admin_registro.</li>
-     * </ol>
+     * <ul>
+     *     <li>Representa la relación entre la empresa y el administrador que la creó.</li>
+     *     <li>Relación ManyToOne: un administrador puede registrar múltiples empresas.</li>
+     *     <li>Se persiste en la columna <code>id_admin_registro</code> de la tabla correspondiente.</li>
+     *     <li>Es un dato obligatorio para mantener trazabilidad y auditoría.</li>
+     * </ul>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @ManyToOne
-    @JoinColumn(name = "id_admin_registro")
+    @JoinColumn(name = "id_admin_registro", nullable = false)
     private Administrador adminRegistro;
+
 
     /**
      * Fecha y hora en la que se creó la empresa.
@@ -98,7 +103,7 @@ public class Empresa {
      *     <li>Permite auditoría temporal.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private LocalDateTime creadoEn;
 
@@ -110,7 +115,7 @@ public class Empresa {
      *     <li>Permite control de cambios.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private LocalDateTime actualizadoEn;
 
@@ -118,7 +123,7 @@ public class Empresa {
      * Obtiene el identificador único de la empresa.
      *
      * @return ID de la empresa.
-     * @since 0.1
+     * @since v0.1
      */
     public Long getIdEmpresa() {
         return idEmpresa;
@@ -128,7 +133,7 @@ public class Empresa {
      * Establece el identificador único de la empresa.
      *
      * @param idEmpresa ID de la empresa.
-     * @since 0.1
+     * @since v0.1
      */
     public void setIdEmpresa(Long idEmpresa) {
         this.idEmpresa = idEmpresa;
@@ -138,7 +143,7 @@ public class Empresa {
      * Obtiene el nombre de la empresa.
      *
      * @return nombre de la empresa.
-     * @since 0.1
+     * @since v0.1
      */
     public String getNombre() {
         return nombre;
@@ -148,7 +153,7 @@ public class Empresa {
      * Establece el nombre de la empresa.
      *
      * @param nombre nombre comercial.
-     * @since 0.1
+     * @since v0.1
      */
     public void setNombre(String nombre) {
         this.nombre = nombre;
@@ -158,7 +163,7 @@ public class Empresa {
      * Obtiene la descripción de la empresa.
      *
      * @return descripción de la empresa.
-     * @since 0.1
+     * @since v0.1
      */
     public String getDescripcion() {
         return descripcion;
@@ -168,7 +173,7 @@ public class Empresa {
      * Establece la descripción de la empresa.
      *
      * @param descripcion texto descriptivo.
-     * @since 0.1
+     * @since v0.1
      */
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
@@ -178,7 +183,7 @@ public class Empresa {
      * Obtiene la URL del logo de la empresa.
      *
      * @return URL del logo.
-     * @since 0.1
+     * @since v0.1
      */
     public String getLogoUrl() {
         return logoUrl;
@@ -188,7 +193,7 @@ public class Empresa {
      * Establece la URL del logo de la empresa.
      *
      * @param logoUrl dirección del logo.
-     * @since 0.1
+     * @since v0.1
      */
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
@@ -198,7 +203,7 @@ public class Empresa {
      * Obtiene el administrador que registró la empresa.
      *
      * @return administrador creador.
-     * @since 0.1
+     * @since v0.1
      */
     public Administrador getAdminRegistro() {
         return adminRegistro;
@@ -208,7 +213,7 @@ public class Empresa {
      * Establece el administrador que registró la empresa.
      *
      * @param adminRegistro administrador creador.
-     * @since 0.1
+     * @since v0.1
      */
     public void setAdminRegistro(Administrador adminRegistro) {
         this.adminRegistro = adminRegistro;
@@ -218,7 +223,7 @@ public class Empresa {
      * Obtiene la fecha de creación de la empresa.
      *
      * @return fecha de creación.
-     * @since 0.1
+     * @since v0.1
      */
     public LocalDateTime getCreadoEn() {
         return creadoEn;
@@ -228,7 +233,7 @@ public class Empresa {
      * Establece la fecha de creación de la empresa.
      *
      * @param creadoEn fecha de creación.
-     * @since 0.1
+     * @since v0.1
      */
     public void setCreadoEn(LocalDateTime creadoEn) {
         this.creadoEn = creadoEn;
@@ -238,7 +243,7 @@ public class Empresa {
      * Obtiene la fecha de última actualización de la empresa.
      *
      * @return fecha de actualización.
-     * @since 0.1
+     * @since v0.1
      */
     public LocalDateTime getActualizadoEn() {
         return actualizadoEn;
@@ -248,7 +253,7 @@ public class Empresa {
      * Establece la fecha de última actualización de la empresa.
      *
      * @param actualizadoEn fecha de actualización.
-     * @since 0.1
+     * @since v0.1
      */
     public void setActualizadoEn(LocalDateTime actualizadoEn) {
         this.actualizadoEn = actualizadoEn;

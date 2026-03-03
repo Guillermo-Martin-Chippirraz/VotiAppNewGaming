@@ -1,6 +1,9 @@
 package com.newgaming.votacionGestor.DTO;
 
+import com.newgaming.votacionGestor.models.Evento;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * DTO utilizado para representar información resumida de un evento dentro del sistema.
@@ -20,7 +23,7 @@ import java.time.LocalDate;
  * únicamente los datos necesarios para mostrar o manipular información del evento.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 public class EventoDTO {
 
@@ -32,7 +35,7 @@ public class EventoDTO {
      *     <li>Es utilizado para operaciones de consulta y actualización.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private Long id;
 
@@ -44,9 +47,23 @@ public class EventoDTO {
      *     <li>Se utiliza para mostrar información al usuario.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private String nombre;
+
+
+    /**
+     * Descripción detallada del evento.
+     *
+     * <ul>
+     *     <li>Puede contener texto libre.</li>
+     *     <li>Proporciona información adicional sobre el evento.</li>
+     *     <li>No posee restricciones de validación en este DTO.</li>
+     * </ul>
+     *
+     * @since v0.2
+     */
+    private String descripcion;
 
     /**
      * Estado actual del evento.
@@ -56,7 +73,7 @@ public class EventoDTO {
      *     <li>Permite controlar su disponibilidad dentro del sistema.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private String estado;
 
@@ -68,14 +85,51 @@ public class EventoDTO {
      *     <li>Se utiliza para mostrar información temporal al usuario.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private LocalDate fecha;
 
     /**
+     * Identificador del usuario que creó el evento.
+     *
+     * <ul>
+     *     <li>Corresponde al administrador que registró el evento.</li>
+     *     <li>Se utiliza para auditoría y trazabilidad.</li>
+     * </ul>
+     *
+     * @since v0.2
+     */
+    private Long idUsuarioCreador;
+
+    /**
+     * Fecha y hora en la que el evento fue creado.
+     *
+     * <ul>
+     *     <li>Se asigna automáticamente al registrar el evento.</li>
+     *     <li>Permite llevar control temporal de la creación.</li>
+     * </ul>
+     *
+     * @since v0.2
+     */
+    private LocalDateTime creadoEn;
+
+    /**
+     * Fecha y hora de la última actualización del evento.
+     *
+     * <ul>
+     *     <li>Se actualiza cada vez que se modifica el evento.</li>
+     *     <li>Permite mantener un historial de cambios.</li>
+     * </ul>
+     *
+     * @since v0.2
+     */
+    private LocalDateTime actualizadoEn;
+
+
+    /**
      * Obtiene el identificador del evento.
      *
-     * @since 0.1
+     * @since v0.1
      * @return ID del evento.
      */
     public Long getId() {
@@ -85,7 +139,7 @@ public class EventoDTO {
     /**
      * Establece el identificador del evento.
      *
-     * @since 0.1
+     * @since v0.1
      * @param id ID del evento.
      */
     public void setId(Long id) {
@@ -95,7 +149,7 @@ public class EventoDTO {
     /**
      * Obtiene el nombre del evento.
      *
-     * @since 0.1
+     * @since v0.1
      * @return nombre del evento.
      */
     public String getNombre() {
@@ -105,7 +159,7 @@ public class EventoDTO {
     /**
      * Establece el nombre del evento.
      *
-     * @since 0.1
+     * @since v0.1
      * @param nombre nombre del evento.
      */
     public void setNombre(String nombre) {
@@ -113,9 +167,29 @@ public class EventoDTO {
     }
 
     /**
+     * Obtiene la descripción del evento.
+     *
+     * @since v0.2
+     * @return descripción del evento.
+     */
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    /**
+     * Establece la descripción del evento.
+     *
+     * @since v0.2
+     * @param descripcion texto descriptivo del evento.
+     */
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    /**
      * Obtiene el estado del evento.
      *
-     * @since 0.1
+     * @since v0.1
      * @return estado del evento.
      */
     public String getEstado() {
@@ -125,7 +199,7 @@ public class EventoDTO {
     /**
      * Establece el estado del evento.
      *
-     * @since 0.1
+     * @since v0.1
      * @param estado estado del evento.
      */
     public void setEstado(String estado) {
@@ -135,7 +209,7 @@ public class EventoDTO {
     /**
      * Obtiene la fecha del evento.
      *
-     * @since 0.1
+     * @since v0.1
      * @return fecha del evento.
      */
     public LocalDate getFecha() {
@@ -145,10 +219,102 @@ public class EventoDTO {
     /**
      * Establece la fecha del evento.
      *
-     * @since 0.1
+     * @since v0.1
      * @param fecha fecha del evento.
      */
     public void setFecha(LocalDate fecha) {
         this.fecha = fecha;
     }
+
+    /**
+     * Obtiene el ID del usuario que creó el evento.
+     *
+     * @since v0.2
+     * @return identificador del usuario creador.
+     */
+    public Long getIdUsuarioCreador() {
+        return idUsuarioCreador;
+    }
+
+    /**
+     * Establece el ID del usuario que creó el evento.
+     *
+     * @since v0.2
+     * @param idUsuarioCreador identificador del usuario creador.
+     */
+    public void setIdUsuarioCreador(Long idUsuarioCreador) {
+        this.idUsuarioCreador = idUsuarioCreador;
+    }
+
+    /**
+     * Obtiene la fecha y hora de creación del evento.
+     *
+     * @since v0.2
+     * @return fecha de creación.
+     */
+    public LocalDateTime getCreadoEn() {
+        return creadoEn;
+    }
+
+    /**
+     * Establece la fecha y hora de creación del evento.
+     *
+     * @since v0.2
+     * @param creadoEn fecha de creación.
+     */
+    public void setCreadoEn(LocalDateTime creadoEn) {
+        this.creadoEn = creadoEn;
+    }
+
+    /**
+     * Obtiene la fecha y hora de la última actualización del evento.
+     *
+     * @since v0.2
+     * @return fecha de última actualización.
+     */
+    public LocalDateTime getActualizadoEn() {
+        return actualizadoEn;
+    }
+
+    /**
+     * Establece la fecha y hora de la última actualización del evento.
+     *
+     * @since v0.2
+     * @param actualizadoEn fecha de última actualización.
+     */
+    public void setActualizadoEn(LocalDateTime actualizadoEn) {
+        this.actualizadoEn = actualizadoEn;
+    }
+
+    /**
+     * Convierte una entidad <code>Evento</code> en un objeto <code>EventoDTO</code>.
+     *
+     * <ol>
+     *     <li>Crea una nueva instancia de <code>EventoDTO</code>.</li>
+     *     <li>Asigna el ID del evento.</li>
+     *     <li>Asigna el nombre, descripción, fecha y estado.</li>
+     *     <li>Asigna el ID del usuario creador.</li>
+     *     <li>Asigna las fechas de creación y actualización.</li>
+     * </ol>
+     *
+     * <p>Este método permite transformar la entidad completa en un DTO seguro
+     * para su exposición en respuestas HTTP.</p>
+     *
+     * @since v0.1
+     * @param evento entidad <code>Evento</code> a convertir.
+     * @return instancia de <code>EventoDTO</code> con los datos del evento.
+     */
+    public static EventoDTO fromEntity(Evento evento) {
+        EventoDTO dto = new EventoDTO();
+        dto.setId(evento.getIdEvento());
+        dto.setNombre(evento.getNombre());
+        dto.setDescripcion(evento.getDescripcion());
+        dto.setFecha(evento.getFecha());
+        dto.setEstado(evento.getEstado());
+        dto.setIdUsuarioCreador(evento.getUsuarioCreador().getIdUsuario());
+        dto.setCreadoEn(evento.getCreadoEn());
+        dto.setActualizadoEn(evento.getActualizadoEn());
+        return dto;
+    }
+
 }

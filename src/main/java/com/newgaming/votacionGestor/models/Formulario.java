@@ -1,6 +1,9 @@
 package com.newgaming.votacionGestor.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 
 /**
@@ -21,7 +24,7 @@ import java.time.LocalDateTime;
  * evitando duplicidades y manteniendo independencia entre ediciones.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @Entity
 @Table(name = "formulario")
@@ -35,7 +38,7 @@ public class Formulario {
      *     <li>Generado automáticamente mediante estrategia IDENTITY.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,22 +52,24 @@ public class Formulario {
      *     <li>Se almacena en la columna id_evento con restricción de unicidad.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @OneToOne
     @JoinColumn(name = "id_evento", unique = true)
     private Evento evento;
 
     /**
-     * Lista de preguntas del formulario en formato JSONB.
+     * Lista de preguntas del formulario almacenada en formato JSONB.
      *
-     * <ol>
-     *     <li>Permite almacenar preguntas dinámicas y estructuradas.</li>
-     *     <li>Facilita la edición y lectura desde el frontend.</li>
-     * </ol>
+     * <ul>
+     *     <li>Permite guardar estructuras dinámicas de preguntas sin necesidad de un esquema rígido.</li>
+     *     <li>El uso de JSONB facilita búsquedas eficientes y operaciones avanzadas en PostgreSQL.</li>
+     *     <li>Se utiliza para representar el contenido completo del formulario tal como lo consume el frontend.</li>
+     * </ul>
      *
-     * @since 0.1
+     * @since v0.1
      */
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String listaDePreguntas;
 
@@ -76,7 +81,7 @@ public class Formulario {
      *     <li>Permite auditoría temporal.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private LocalDateTime creadoEn;
 
@@ -88,7 +93,7 @@ public class Formulario {
      *     <li>Permite control de cambios.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     private LocalDateTime actualizadoEn;
 
@@ -96,7 +101,7 @@ public class Formulario {
      * Obtiene el identificador único del formulario.
      *
      * @return ID del formulario.
-     * @since 0.1
+     * @since v0.1
      */
     public Long getIdFormulario() {
         return idFormulario;
@@ -106,7 +111,7 @@ public class Formulario {
      * Establece el identificador único del formulario.
      *
      * @param idFormulario ID del formulario.
-     * @since 0.1
+     * @since v0.1
      */
     public void setIdFormulario(Long idFormulario) {
         this.idFormulario = idFormulario;
@@ -116,7 +121,7 @@ public class Formulario {
      * Obtiene el evento asociado al formulario.
      *
      * @return evento vinculado.
-     * @since 0.1
+     * @since v0.1
      */
     public Evento getEvento() {
         return evento;
@@ -126,7 +131,7 @@ public class Formulario {
      * Establece el evento asociado al formulario.
      *
      * @param evento evento vinculado.
-     * @since 0.1
+     * @since v0.1
      */
     public void setEvento(Evento evento) {
         this.evento = evento;
@@ -136,7 +141,7 @@ public class Formulario {
      * Obtiene la lista de preguntas del formulario.
      *
      * @return preguntas en formato JSON.
-     * @since 0.1
+     * @since v0.1
      */
     public String getListaDePreguntas() {
         return listaDePreguntas;
@@ -146,7 +151,7 @@ public class Formulario {
      * Establece la lista de preguntas del formulario.
      *
      * @param listaDePreguntas JSON con las preguntas.
-     * @since 0.1
+     * @since v0.1
      */
     public void setListaDePreguntas(String listaDePreguntas) {
         this.listaDePreguntas = listaDePreguntas;
@@ -156,7 +161,7 @@ public class Formulario {
      * Obtiene la fecha de creación del formulario.
      *
      * @return fecha de creación.
-     * @since 0.1
+     * @since v0.1
      */
     public LocalDateTime getCreadoEn() {
         return creadoEn;
@@ -166,7 +171,7 @@ public class Formulario {
      * Establece la fecha de creación del formulario.
      *
      * @param creadoEn fecha de creación.
-     * @since 0.1
+     * @since v0.1
      */
     public void setCreadoEn(LocalDateTime creadoEn) {
         this.creadoEn = creadoEn;
@@ -176,7 +181,7 @@ public class Formulario {
      * Obtiene la fecha de última actualización del formulario.
      *
      * @return fecha de actualización.
-     * @since 0.1
+     * @since v0.1
      */
     public LocalDateTime getActualizadoEn() {
         return actualizadoEn;
@@ -186,7 +191,7 @@ public class Formulario {
      * Establece la fecha de última actualización del formulario.
      *
      * @param actualizadoEn fecha de actualización.
-     * @since 0.1
+     * @since v0.1
      */
     public void setActualizadoEn(LocalDateTime actualizadoEn) {
         this.actualizadoEn = actualizadoEn;

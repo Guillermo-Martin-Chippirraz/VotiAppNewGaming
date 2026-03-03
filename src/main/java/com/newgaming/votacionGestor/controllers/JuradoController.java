@@ -5,7 +5,9 @@ import com.newgaming.votacionGestor.DTO.VotacionDTO;
 import com.newgaming.votacionGestor.models.Jurado;
 import com.newgaming.votacionGestor.models.Usuario;
 import com.newgaming.votacionGestor.services.JuradoService;
+import com.newgaming.votacionGestor.services.UsuarioService;
 import com.newgaming.votacionGestor.services.VotacionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -33,7 +36,7 @@ import java.util.List;
  * permitiéndoles acceder a su información y a su historial de votaciones.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @RestController
 @RequestMapping("/api/jurados")
@@ -41,39 +44,46 @@ public class JuradoController {
 
     private final JuradoService juradoService;
     private final VotacionService votacionService;
+    private final UsuarioService usuarioService;
 
     /**
      * Constructor por parámetros.
      * Inicializa el controlador con los servicios necesarios para gestionar
-     * jurados y votaciones.
+     * jurados, votaciones y operaciones relacionadas con usuarios.
      *
      * <ol>
      *     <li>Asigna la dependencia <code>JuradoService</code>.</li>
      *     <li>Asigna la dependencia <code>VotacionService</code>.</li>
+     *     <li>Asigna la dependencia <code>UsuarioService</code>.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param juradoService servicio encargado de la gestión de jurados.
      * @param votacionService servicio encargado de la gestión de votaciones.
+     * @param usuarioService servicio encargado de la gestión de usuarios.
      */
-    public JuradoController(JuradoService juradoService, VotacionService votacionService) {
+    public JuradoController(JuradoService juradoService, VotacionService votacionService, UsuarioService usuarioService) {
         this.juradoService = juradoService;
         this.votacionService = votacionService;
+        this.usuarioService = usuarioService;
     }
 
     /**
      * Endpoint para obtener la información de un jurado mediante su ID.
+     * Solo accesible para usuarios con rol ADMIN.
      *
      * <ol>
      *     <li>Recibe el ID del jurado mediante la URL.</li>
-     *     <li>Solicita al servicio obtener la entidad correspondiente.</li>
-     *     <li>Convierte la entidad en un DTO para su devolución.</li>
+     *     <li>Solicita al servicio obtener la entidad <code>Jurado</code> correspondiente.</li>
+     *     <li>Convierte la entidad en un objeto <code>JuradoDTO</code>.</li>
+     *     <li>Devuelve el DTO como respuesta.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param id identificador del jurado.
-     * @return DTO con la información del jurado.
+     * @return DTO con la información del jurado solicitado.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<JuradoDTO> obtenerJurado(@PathVariable Long id) {
         return ResponseEntity.ok(JuradoDTO.fromEntity(juradoService.obtenerPorId(id)));
@@ -84,30 +94,30 @@ public class JuradoController {
      * Solo accesible para usuarios con rol JURADO.
      *
      * <ol>
-     *     <li>Obtiene el usuario autenticado desde el contexto de seguridad.</li>
-     *     <li>Verifica que el usuario no sea nulo.</li>
-     *     <li>Solicita al servicio obtener todas las votaciones asociadas al jurado.</li>
-     *     <li>Convierte cada votación en un DTO para su devolución.</li>
+     *     <li>Obtiene el username del usuario autenticado desde el contexto de seguridad.</li>
+     *     <li>Recupera la entidad <code>Usuario</code> asociada a dicho username.</li>
+     *     <li>Solicita al servicio obtener todas las votaciones realizadas por ese jurado.</li>
+     *     <li>Convierte cada votación en un objeto <code>VotacionDTO</code>.</li>
+     *     <li>Devuelve la lista de votaciones como respuesta.</li>
      * </ol>
      *
      * @since 0.1
      * @param auth objeto de autenticación que contiene el usuario autenticado.
-     * @return lista de votaciones realizadas por el jurado.
+     * @return lista de votaciones realizadas por el jurado autenticado.
      */
     @PreAuthorize("hasRole('JURADO')")
     @GetMapping("/mis-votaciones")
     public ResponseEntity<List<VotacionDTO>> misVotaciones(Authentication auth) {
 
-        Usuario jurado = (Usuario) auth.getPrincipal();
-        List<VotacionDTO> lista = null;
+        String username = (String) auth.getPrincipal();
 
-        if (jurado != null) {
-            lista = votacionService
+        Usuario jurado = usuarioService.buscarPorUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        List<VotacionDTO> lista = votacionService
                     .obtenerPorJurado(jurado.getIdUsuario())
                     .stream()
                     .map(VotacionDTO::fromEntity)
                     .toList();
-        }
 
         return ResponseEntity.ok(lista);
     }

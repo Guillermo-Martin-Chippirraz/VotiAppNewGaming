@@ -1,8 +1,7 @@
 package com.newgaming.votacionGestor.DTO;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.Map;
 
 /**
  * DTO utilizado para la creación de nuevas votaciones dentro del sistema.
@@ -22,7 +21,7 @@ import java.util.Map;
  * estructurado y consistente.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 public class CrearVotacionDTO {
 
@@ -34,7 +33,7 @@ public class CrearVotacionDTO {
      *     <li>Permite asociar la votación a una empresa concreta.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @NotNull(message = "Debe indicar la empresa")
     private Long idEmpresa;
@@ -47,10 +46,25 @@ public class CrearVotacionDTO {
      *     <li>Permite saber qué conjunto de preguntas respondió el jurado.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @NotNull(message = "Debe indicar el formulario")
     private Long idFormulario;
+
+    /**
+     * Identificador del evento al que pertenece la votación.
+     *
+     * <ul>
+     *     <li>Debe ser un valor no nulo.</li>
+     *     <li>Permite asociar la votación al evento correspondiente.</li>
+     *     <li>Es indispensable para validar que el jurado está votando dentro del evento correcto.</li>
+     * </ul>
+     *
+     * @since v0.2
+     */
+    @NotNull(message = "Debe indicar el evento")
+    private Long idEvento;
+
 
     /**
      * Puntuación total obtenida en la votación.
@@ -60,29 +74,30 @@ public class CrearVotacionDTO {
      *     <li>Representa la valoración final otorgada por el jurado.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      */
     @NotNull(message = "Debe indicar la puntuación total")
     private Double puntuacionTotal;
 
+
     /**
      * Respuestas del jurado a cada pregunta del formulario.
      *
-     * <ol>
-     *     <li>Debe ser un valor no nulo.</li>
-     *     <li>Se almacena como un mapa clave-valor para mayor flexibilidad.</li>
-     *     <li>Permite representar respuestas de distintos tipos.</li>
-     * </ol>
+     * <ul>
+     *     <li>Debe ser un valor no vacío.</li>
+     *     <li>Se almacena como una cadena JSON para permitir flexibilidad en la estructura.</li>
+     *     <li>Representa las respuestas completas del jurado al formulario asignado.</li>
+     * </ul>
      *
-     * @since 0.1
+     * @since v0.1
      */
-    @NotNull(message = "Debe incluir las respuestas")
-    private Map<String, Object> respuetas;
+    @NotBlank(message = "Debe incluir las respuestas")
+    private String respuestasJson;
 
     /**
      * Obtiene el ID de la empresa evaluada.
      *
-     * @since 0.1
+     * @since v0.1
      * @return identificador de la empresa.
      */
     public @NotNull Long getIdEmpresa() {
@@ -92,7 +107,7 @@ public class CrearVotacionDTO {
     /**
      * Establece el ID de la empresa evaluada.
      *
-     * @since 0.1
+     * @since v0.1
      * @param idEmpresa identificador de la empresa.
      */
     public void setIdEmpresa(@NotNull Long idEmpresa) {
@@ -102,7 +117,7 @@ public class CrearVotacionDTO {
     /**
      * Obtiene el ID del formulario utilizado.
      *
-     * @since 0.1
+     * @since v0.1
      * @return identificador del formulario.
      */
     public @NotNull Long getIdFormulario() {
@@ -112,7 +127,7 @@ public class CrearVotacionDTO {
     /**
      * Establece el ID del formulario utilizado.
      *
-     * @since 0.1
+     * @since v0.1
      * @param idFormulario identificador del formulario.
      */
     public void setIdFormulario(@NotNull Long idFormulario) {
@@ -120,9 +135,29 @@ public class CrearVotacionDTO {
     }
 
     /**
+     * Obtiene el identificador del evento al que pertenece la votación.
+     *
+     * @since v0.2
+     * @return ID del evento.
+     */
+    public @NotNull(message = "Debe indicar el evento") Long getIdEvento() {
+        return idEvento;
+    }
+
+    /**
+     * Establece el identificador del evento al que pertenece la votación.
+     *
+     * @since v0.2
+     * @param idEvento ID del evento.
+     */
+    public void setIdEvento(@NotNull(message = "Debe indicar el evento") Long idEvento) {
+        this.idEvento = idEvento;
+    }
+
+    /**
      * Obtiene la puntuación total otorgada en la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @return puntuación total.
      */
     public @NotNull Double getPuntuacionTotal() {
@@ -132,7 +167,7 @@ public class CrearVotacionDTO {
     /**
      * Establece la puntuación total otorgada en la votación.
      *
-     * @since 0.1
+     * @since v0.1
      * @param puntuacionTotal puntuación total.
      */
     public void setPuntuacionTotal(@NotNull Double puntuacionTotal) {
@@ -140,22 +175,28 @@ public class CrearVotacionDTO {
     }
 
     /**
-     * Obtiene el mapa de respuestas del jurado.
+     * Obtiene la cadena JSON que contiene las respuestas del jurado.
      *
-     * @since 0.1
-     * @return mapa con las respuestas del formulario.
+     * <p>Este valor representa todas las respuestas del formulario en formato JSON,
+     * permitiendo almacenar estructuras dinámicas y flexibles.</p>
+     *
+     * @since v0.1
+     * @return respuestas del formulario en formato JSON.
      */
-    public @NotNull Map<String, Object> getRespuetas() {
-        return respuetas;
+    public @NotBlank String getRespuestasJson() {
+        return respuestasJson;
     }
 
     /**
-     * Establece el mapa de respuestas del jurado.
+     * Establece la cadena JSON con las respuestas del jurado.
      *
-     * @since 0.1
-     * @param respuetas mapa con las respuestas del formulario.
+     * <p>Debe ser un texto no vacío que represente un JSON válido con las respuestas
+     * del formulario.</p>
+     *
+     * @since v0.1
+     * @param respuestasJson respuestas del formulario en formato JSON.
      */
-    public void setRespuetas(@NotNull Map<String, Object> respuetas) {
-        this.respuetas = respuetas;
+    public void setRespuestasJson(@NotBlank String respuestasJson) {
+        this.respuestasJson = respuestasJson;
     }
 }

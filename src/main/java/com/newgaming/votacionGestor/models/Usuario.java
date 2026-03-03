@@ -1,7 +1,12 @@
 package com.newgaming.votacionGestor.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Clase que modela un usuario genérico dentro del sistema de votación.
@@ -21,7 +26,7 @@ import java.time.LocalDateTime;
  * </ol>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.1
+ * @version v0.2
  */
 @Entity
 @Table(name = "usuario")
@@ -95,15 +100,17 @@ public class Usuario {
     /**
      * Datos adicionales del usuario almacenados en formato JSONB.
      *
-     * <ol>
-     *     <li>Permite almacenar información flexible.</li>
-     *     <li>Se utiliza para datos no estructurados.</li>
-     * </ol>
+     * <ul>
+     *     <li>Permite guardar información flexible y no estructurada asociada al usuario.</li>
+     *     <li>Es útil para almacenar preferencias, configuraciones u otros datos dinámicos.</li>
+     *     <li>El uso de JSONB en PostgreSQL permite realizar consultas eficientes sobre su contenido.</li>
+     * </ul>
      *
      * @since v0.1
      */
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String datosExtra;
+    private Map<String, Object> datosExtra = new HashMap<>();
 
     /**
      * Fecha y hora en la que se creó el usuario.
@@ -230,22 +237,30 @@ public class Usuario {
     }
 
     /**
-     * Obtiene los datos adicionales del usuario.
+     * Obtiene los datos adicionales del usuario almacenados en formato JSONB.
      *
-     * @return datos en formato JSON.
+     * <p>Este mapa contiene información flexible y no estructurada asociada al usuario,
+     * como preferencias, configuraciones u otros valores dinámicos que no forman parte
+     * del modelo principal. Su contenido puede variar según las necesidades del sistema.</p>
+     *
      * @since v0.1
+     * @return mapa con los datos adicionales del usuario.
      */
-    public String getDatosExtra() {
+    public Map<String, Object> getDatosExtra() {
         return datosExtra;
     }
 
     /**
-     * Establece los datos adicionales del usuario.
+     * Establece los datos adicionales del usuario en formato JSONB.
      *
-     * @param datosExtra JSON con información adicional.
+     * <p>Permite asignar un conjunto de valores dinámicos y no estructurados al usuario.
+     * El contenido del mapa será almacenado en la base de datos utilizando el tipo JSONB,
+     * lo que facilita consultas eficientes y flexibilidad en la estructura.</p>
+     *
      * @since v0.1
+     * @param datosExtra mapa con información adicional del usuario.
      */
-    public void setDatosExtra(String datosExtra) {
+    public void setDatosExtra(Map<String, Object> datosExtra) {
         this.datosExtra = datosExtra;
     }
 

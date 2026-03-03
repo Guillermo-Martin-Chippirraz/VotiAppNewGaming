@@ -2,9 +2,13 @@ package com.newgaming.votacionGestor.components;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Date;
 
 /**
@@ -29,7 +33,7 @@ import java.util.Date;
  * <p>Esta clase es fundamental para la autenticación basada en JWT dentro del sistema.</p>
  *
  * @author Guillermo
- * @version 0.1
+ * @version v0.2
  */
 @Component
 public class JwtUtil {
@@ -41,17 +45,39 @@ public class JwtUtil {
     private long EXPIRATION;
 
     /**
-     * Genera un token JWT firmado utilizando el username y el rol del usuario.
+     * Obtiene la clave criptográfica utilizada para firmar y validar tokens JWT.
      *
      * <ol>
-     *     <li>Se establece el subject del token como el username.</li>
-     *     <li>Se añade el rol como claim adicional.</li>
-     *     <li>Se define la fecha de emisión.</li>
-     *     <li>Se calcula la fecha de expiración sumando EXPIRATION al tiempo actual.</li>
-     *     <li>Se firma el token con HS256 utilizando el secreto configurado.</li>
+     *     <li>Lee la clave secreta configurada en las propiedades.</li>
+     *     <li>Decodifica el valor Base64 para obtener los bytes reales.</li>
+     *     <li>Construye una clave HMAC válida para HS256 mediante Keys.hmacShaKeyFor().</li>
+     *     <li>Devuelve un objeto SecretKey listo para firmar y validar tokens.</li>
      * </ol>
      *
-     * @since 0.1
+     * <p>La clave debe tener al menos 256 bits (32 bytes) para ser válida con HS256.</p>
+     *
+     * @since v0.2
+     * @return clave criptográfica para firma y validación de JWT.
+     */
+    private SecretKey getSigningKey() {
+        System.out.println(">>> SECRET RAW = [" + SECRET + "]");
+        byte [] keyBytes = Base64.getDecoder().decode(SECRET);
+        System.out.println(">>> SECRET LENGTH (bytes) = " + keyBytes.length);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    /**
+     * Genera un token JWT firmado que identifica al usuario y su rol.
+     *
+     * <ol>
+     *     <li>Establece el subject del token como el username.</li>
+     *     <li>Añade el rol del usuario como claim personalizado.</li>
+     *     <li>Define la fecha de emisión (iat).</li>
+     *     <li>Calcula la fecha de expiración sumando EXPIRATION al tiempo actual.</li>
+     *     <li>Firma el token con HS256 utilizando la clave configurada.</li>
+     * </ol>
+     *
+     * @since v0.1
      * @param username nombre del usuario autenticado.
      * @param rol rol del usuario (ADMIN o JURADO).
      * @return token JWT firmado y con fecha de expiración.
@@ -62,7 +88,7 @@ public class JwtUtil {
                 .claim("rol", rol)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(SignatureAlgorithm.HS256, SECRET)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -70,18 +96,18 @@ public class JwtUtil {
      * Extrae el nombre de usuario (subject) contenido en el token JWT.
      *
      * <ol>
-     *     <li>Se valida la firma utilizando el secreto configurado.</li>
-     *     <li>Se obtiene el cuerpo del token.</li>
-     *     <li>Se devuelve el subject almacenado.</li>
+     *     <li>Valida la firma del token utilizando la clave configurada.</li>
+     *     <li>Parsea el token y obtiene los claims.</li>
+     *     <li>Devuelve el subject almacenado, que corresponde al username.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param token token JWT recibido.
      * @return username contenido en el token.
      */
     public String extraerUsername(String token) {
         return Jwts.parser()
-                .setSigningKey(SECRET)
+                .setSigningKey(getSigningKey())
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
@@ -91,30 +117,31 @@ public class JwtUtil {
      * Extrae el rol del usuario desde los claims del token JWT.
      *
      * <ol>
-     *     <li>Se valida la firma del token.</li>
-     *     <li>Se obtiene el cuerpo del token.</li>
-     *     <li>Se devuelve el claim "rol" como String.</li>
+     *     <li>Valida la firma del token.</li>
+     *     <li>Parsea el cuerpo del token.</li>
+     *     <li>Obtiene el claim "rol" y lo devuelve como String.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param token token JWT recibido.
-     * @return rol del usuario.
+     * @return rol del usuario contenido en el token.
      */
     public String extraerRol(String token) {
         return Jwts.parser()
-                .setSigningKey(SECRET)
+                .setSigningKey(getSigningKey())
                 .parseClaimsJws(token)
                 .getBody()
                 .get("rol", String.class);
     }
 
     /**
-     * Valida que el token JWT sea correcto.
+     * Valida que el token JWT sea correcto y no haya expirado.
      *
      * <ol>
-     *     <li>Comprueba que la firma sea válida utilizando el secreto.</li>
-     *     <li>Verifica que el token no haya expirado.</li>
-     *     <li>Si ocurre cualquier excepción, el token se considera inválido.</li>
+     *     <li>Intenta validar la firma utilizando la clave configurada.</li>
+     *     <li>Comprueba automáticamente la expiración del token.</li>
+     *     <li>Si ocurre cualquier excepción (firma inválida, token caducado, formato incorrecto),
+     *         el token se considera inválido.</li>
      * </ol>
      *
      * @since 0.1
@@ -123,7 +150,7 @@ public class JwtUtil {
      */
     public boolean validarToken(String token) {
         try {
-            Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token);
+            Jwts.parser().setSigningKey(getSigningKey()).parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;

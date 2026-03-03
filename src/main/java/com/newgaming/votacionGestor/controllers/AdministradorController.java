@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
  * nuevos jurados dentro del sistema.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -46,7 +46,7 @@ public class AdministradorController {
      *     <li>Permite acceder a la lógica de negocio desde los endpoints.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param administradorService servicio encargado de la gestión de administradores.
      */
     public AdministradorController(AdministradorService administradorService) {
@@ -61,23 +61,28 @@ public class AdministradorController {
      *     <li>Recibe el ID del administrador que realiza el registro.</li>
      *     <li>Valida el DTO recibido mediante anotaciones de validación.</li>
      *     <li>Obtiene el administrador desde la base de datos.</li>
-     *     <li>Convierte el DTO en una entidad Jurado.</li>
+     *     <li>Convierte el DTO en una entidad <code>Jurado</code>.</li>
      *     <li>Registra el jurado mediante el servicio correspondiente.</li>
      *     <li>Devuelve un DTO con la información del jurado creado.</li>
      * </ol>
      *
-     * @since 0.1
-     * @param idAmin identificador del administrador que registra al jurado.
+     * <p>Este endpoint permite a un administrador crear nuevos jurados dentro del sistema,
+     * asociando cada registro al administrador que lo realizó.</p>
+     *
+     * @since v0.1
+     * @param idAdmin identificador del administrador que registra al jurado.
      * @param dto datos necesarios para crear un nuevo jurado.
      * @return objeto <code>JuradoDTO</code> con la información del jurado registrado.
      */
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{idAdmin}/registrar-jurado")
     public ResponseEntity<JuradoDTO> registrarJurado(
-            @PathVariable Long idAmin,
+            @PathVariable Long idAdmin,
             @Valid @RequestBody CrearJuradoDTO dto) {
 
-        Administrador admin = administradorService.obtenerPorId(idAmin);
+        System.out.println(">>> DTO recibido: username=" + dto.getUsername() + ", password=" + dto.getPassword());
+
+        Administrador admin = administradorService.obtenerPorId(idAdmin);
         Jurado nuevo = administradorService.registrarJurado(dto.toEntity(), admin);
 
         return ResponseEntity.ok(JuradoDTO.fromEntity(nuevo));

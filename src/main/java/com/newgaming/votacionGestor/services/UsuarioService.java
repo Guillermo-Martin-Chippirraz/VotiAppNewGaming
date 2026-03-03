@@ -1,9 +1,17 @@
 package com.newgaming.votacionGestor.services;
 
+import com.newgaming.votacionGestor.DTO.CrearUsuarioDTO;
+import com.newgaming.votacionGestor.models.Administrador;
+import com.newgaming.votacionGestor.models.Jurado;
 import com.newgaming.votacionGestor.models.Usuario;
 import com.newgaming.votacionGestor.repositories.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -26,57 +34,103 @@ import java.util.Optional;
  * un componente de servicio dentro del contexto de la aplicación.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.2
  */
 @Service
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
-     * Constructor que inyecta el repositorio de usuarios.
+     * Crea un nuevo usuario en el sistema y lo registra con el rol correspondiente.
      *
-     * @param usuarioRepository repositorio de usuarios.
-     * @since 0.1
+     * <p>Este método valida que el nombre de usuario no exista previamente y construye
+     * la entidad adecuada según el rol indicado en el DTO. Además, registra el
+     * administrador responsable cuando se crea un jurado y establece las marcas
+     * temporales de creación y actualización.</p>
+     *
+     * <ul>
+     *     <li>Verifica que el nombre de usuario no esté ya registrado.</li>
+     *     <li>Determina el tipo de usuario a crear según el rol recibido.</li>
+     *     <li>Asigna el administrador creador cuando el usuario es un jurado.</li>
+     *     <li>Encripta la contraseña antes de almacenarla.</li>
+     *     <li>Registra fechas de creación y actualización.</li>
+     *     <li>Guarda el usuario en la base de datos.</li>
+     * </ul>
+     *
+     * @since v0.1
+     * @param dto datos necesarios para registrar al nuevo usuario.
+     * @param admin administrador que realiza el registro (solo relevante para jurados).
+     * @return usuario recién creado y persistido.
+     * @throws RuntimeException si el nombre de usuario ya existe.
      */
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
+    public Usuario crearUsuario(CrearUsuarioDTO dto, Administrador admin) {
+        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new RuntimeException("El nombre de usuario ya existe");
+        }
 
-    /**
-     * Crea un nuevo usuario en el sistema.
-     *
-     * @param usuario usuario a registrar.
-     * @return usuario registrado.
-     * @since 0.1
-     */
-    public Usuario crearUsuario(Usuario usuario) {
+        Usuario usuario;
+
+        switch (dto.getRol().toUpperCase()) {
+            case "ADMIN":
+                usuario = new Administrador();
+                break;
+            case "JURADO":
+                Jurado j = new Jurado();
+                j.setAdminRegistro(admin);
+                usuario = j;
+                break;
+            default:
+                usuario = new Usuario();
+        }
+
+        usuario.setUsername(dto.getUsername());
+        usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
+        usuario.setEmail(dto.getEmail());
+        usuario.setRol(dto.getRol().toUpperCase());
+        usuario.setCreadoEn(LocalDateTime.now());
+        usuario.setActualizadoEn(LocalDateTime.now());
+
         return usuarioRepository.save(usuario);
     }
 
     /**
      * Busca un usuario por su nombre de usuario.
      *
+     * @since v0.1
      * @param username nombre de usuario.
      * @return un {@link Optional} que contiene el usuario si existe.
-     * @since 0.1
      */
     public Optional<Usuario> buscarPorUsername(String username) {
         return usuarioRepository.findByUsername(username);
     }
 
     /**
-     * Obtiene un usuario por su identificador.
+     * Recupera un usuario a partir de su identificador único.
      *
-     * <p>Si el usuario no existe, se lanza una excepción.</p>
+     * <p>Este método consulta el repositorio para localizar al usuario solicitado.
+     * Si no existe un registro asociado al ID proporcionado, se lanza una excepción
+     * con estado HTTP 404, indicando que el recurso no fue encontrado.</p>
      *
-     * @param id identificador del usuario.
-     * @return usuario correspondiente.
-     * @throws RuntimeException si no se encuentra el usuario.
-     * @since 0.1
+     * <ul>
+     *     <li>Busca el usuario mediante su ID.</li>
+     *     <li>Devuelve la entidad si está presente.</li>
+     *     <li>Lanza una excepción con código 404 si no existe.</li>
+     * </ul>
+     * @since 0.2
+     * @param id identificador del usuario que se desea obtener.
+     * @return entidad <code>Usuario</code> correspondiente al ID.
+     * @throws ResponseStatusException si el usuario no existe en la base de datos.
      */
     public Usuario obtenerPorId(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuario no encontrado"
+                ));
     }
 }
