@@ -1,15 +1,20 @@
 package com.newgaming.votacionGestor.services;
 
 import com.newgaming.votacionGestor.DTO.CrearVotacionDTO;
+import com.newgaming.votacionGestor.DTO.EditarVotacionDTO;
+import com.newgaming.votacionGestor.components.VerificacionAdmin;
 import com.newgaming.votacionGestor.models.*;
 import com.newgaming.votacionGestor.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 /**
  * Servicio encargado de gestionar la lógica de negocio relacionada con las votaciones.
@@ -32,7 +37,7 @@ import java.util.List;
  * un componente de servicio dentro del contexto de la aplicación.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.3
  */
 @Service
 public class VotacionService {
@@ -51,6 +56,44 @@ public class VotacionService {
 
     @Autowired
     private FormularioRepository formularioRepository;
+
+    @Autowired
+    private JuradoRepository juradoRepository;
+
+    /**
+     * Obtiene todas las votaciones registradas en el sistema.
+     *
+     * <p>La operación se ejecuta en modo de solo lectura para optimizar el acceso
+     * a la base de datos. Devuelve la lista completa de entidades {@link Votacion}
+     * almacenadas en el repositorio.</p>
+     *
+     * @since v0.3
+     * @return lista de todas las votaciones existentes.
+     */
+    @Transactional(readOnly = true)
+    public List<Votacion> obtenerTodas() {
+        return votacionRepository.findAll();
+    }
+
+    /**
+     * Obtiene una votación por su identificador.
+     *
+     * <p>La operación se ejecuta en modo de solo lectura. Si la votación no existe,
+     * se lanza una {@link ResponseStatusException} con estado 404 indicando que
+     * no se encontró el recurso solicitado.</p>
+     *
+     * @since v0.3
+     * @param idVotacion identificador de la votación a consultar.
+     * @return la votación correspondiente al identificador proporcionado.
+     * @throws ResponseStatusException si no existe una votación con ese ID.
+     */
+    @Transactional(readOnly = true)
+    public Votacion obtenerPorId(Long idVotacion) {
+        return votacionRepository.findById(idVotacion)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Votación no encontrada"
+                ));
+    }
 
     /**
      * Crea una nueva votación en el sistema y valida todas las condiciones necesarias
@@ -120,29 +163,152 @@ public class VotacionService {
         votacion.setFormulario(formulario);
         votacion.setRespuestasJson(dto.getRespuestasJson());
         votacion.setFechaVotacion(LocalDateTime.now());
-
-        votacion.setPuntuacionTotal(calcularPuntuacion(dto.getRespuestasJson()));
-        System.out.println("Respuestas recibidas: " + dto.getRespuestasJson());
+        votacion.setPuntuacionTotal(dto.getPuntuacionTotal());
 
         return votacionRepository.save(votacion);
     }
 
     /**
-     * Calcula la puntuación total de una votación a partir de las respuestas enviadas.
+     * Edita una votación existente realizada por un jurado.
      *
-     * <p>Este método recibe el JSON con las respuestas del jurado y devuelve un valor
-     * numérico que representa la puntuación final. Actualmente devuelve un valor fijo,
-     * pero está preparado para implementar lógica de cálculo basada en el contenido
-     * del formulario.</p>
+     * <p>Este método permite modificar la puntuación total y las respuestas del
+     * formulario asociadas a una votación. Antes de aplicar los cambios, se
+     * realizan varias validaciones:</p>
      *
-     * @since v0.2
-     * @param respuestasJson respuestas del jurado en formato JSON.
-     * @return puntuación total calculada.
+     * <ul>
+     *   <li>Se verifica que el usuario autenticado sea el propietario de la votación.</li>
+     *   <li>Se comprueba que el evento asociado esté en estado {@code HABILITADO}.</li>
+     *   <li>Solo se actualizan los campos que hayan sido proporcionados en el DTO.</li>
+     * </ul>
+     *
+     * <p>Tras guardar la votación, se ejecuta una verificación automática para
+     * determinar si el evento debe cerrarse (pasar a estado {@code FINALIZADO})
+     * en caso de que todos los jurados hayan votado.</p>
+     *
+     * @since v0.3
+     * @param idVotacion identificador de la votación a editar.
+     * @param dto datos a modificar en la votación.
+     * @param idJurado identificador del jurado que realiza la edición.
+     * @return la votación actualizada.
+     * @throws ResponseStatusException si el usuario no es el propietario,
+     *         si el evento está cerrado o si la votación no existe.
      */
-    private Double calcularPuntuacion(String respuestasJson) {
-        return 0.0;
+    @Transactional
+    public Votacion editarVotacion(Long idVotacion, EditarVotacionDTO dto, Long idJurado) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Usuario usuarioActual = (Usuario) auth.getDetails();
+
+        Votacion votacion = obtenerPorId(idVotacion);
+
+        if (!votacion.getJurado().getIdUsuario().equals(usuarioActual.getIdUsuario())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes editar esta votación");
+        }
+
+        Evento evento = votacion.getEvento();
+
+        if (!"HABILITADO".equals(evento.getEstado())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El evento está cerrado");
+        }
+
+        if (dto.getPuntuacionTotal() != null) {
+            votacion.setPuntuacionTotal(dto.getPuntuacionTotal());
+        }
+
+        if (dto.getRespuestasJson() != null) {
+            votacion.setRespuestasJson(dto.getRespuestasJson());
+        }
+
+        votacion.setFechaVotacion(LocalDateTime.now());
+
+        Votacion guardada = votacionRepository.save(votacion);
+
+        verificarCierreEvento(evento.getIdEvento());
+
+        return guardada;
     }
 
+    /**
+     * Elimina una votación del sistema.
+     *
+     * <p>Solo un administrador puede realizar esta operación. Se verifica el rol
+     * mediante la utilidad {@code VerificacionAdmin.esAdmin()}. Si el usuario no
+     * es administrador, se lanza una excepción con estado 403.</p>
+     *
+     * <p>Si la votación existe, se elimina del repositorio.</p>
+     *
+     * @since v0.3
+     * @param idVotacion identificador de la votación a eliminar.
+     * @throws ResponseStatusException si el usuario no es administrador o si la votación no existe.
+     */
+    @Transactional
+    public void eliminarVotacion(Long idVotacion) {
+
+        boolean esAdmin = VerificacionAdmin.esAdmin();
+        if (!esAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sólo un administrador puede eliminar votaciones");
+        }
+        Votacion votacion = obtenerPorId(idVotacion);
+        votacionRepository.delete(votacion);
+    }
+
+    /**
+     * Verifica si un evento debe cerrarse automáticamente.
+     *
+     * <p>Este método evalúa si todos los jurados han emitido su votación para el
+     * evento indicado. Si el evento está en estado {@code HABILITADO} y todos los
+     * jurados han votado, se procede a:</p>
+     *
+     * <ul>
+     *   <li>Sumar las puntuaciones totales por empresa.</li>
+     *   <li>Comprobar si existe un empate en las puntuaciones.</li>
+     *   <li>Si no hay empates, cambiar el estado del evento a {@code FINALIZADO}.</li>
+     * </ul>
+     *
+     * <p>Si el evento no existe, se lanza una excepción. Si aún faltan jurados por
+     * votar o hay empate, el evento permanece abierto.</p>
+     *
+     * @since v0.3
+     * @param idEvento identificador del evento a verificar.
+     * @throws RuntimeException si el evento no existe.
+     */
+    @Transactional
+    public void verificarCierreEvento(Long idEvento) {
+
+        Evento evento = eventoRepository.findById(idEvento)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+
+        if (!"HABILITADO".equals(evento.getEstado())) return;
+
+        List<Votacion> votaciones = votacionRepository.findByEventoIdEvento(idEvento);
+
+        long totalJurados = juradoRepository.count();
+        long juradosQueHanVotado = votaciones.stream()
+                .map(v -> v.getJurado().getIdUsuario())
+                .distinct()
+                .count();
+
+        if (juradosQueHanVotado < totalJurados) return;
+
+        Map<Long, Double> puntuacionesPorEmpresa = new HashMap<>();
+
+        for (Votacion v : votaciones) {
+            puntuacionesPorEmpresa.merge(
+                    v.getEmpresa().getIdEmpresa(),
+                    v.getPuntuacionTotal(),
+                    Double::sum
+            );
+        }
+
+        Set<Double> puntuaciones = new HashSet<>(puntuacionesPorEmpresa.values());
+
+        if (puntuaciones.size() != puntuacionesPorEmpresa.size()) {
+            return;
+        }
+
+        evento.setEstado("FINALIZADO");
+        eventoRepository.save(evento);
+    }
 
     /**
      * Obtiene todas las votaciones asociadas a un evento concreto.

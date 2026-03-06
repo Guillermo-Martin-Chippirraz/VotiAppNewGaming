@@ -1,5 +1,6 @@
 package com.newgaming.votacionGestor.controllers;
 
+import com.newgaming.votacionGestor.DTO.EditarJuradoDTO;
 import com.newgaming.votacionGestor.DTO.JuradoDTO;
 import com.newgaming.votacionGestor.DTO.VotacionDTO;
 import com.newgaming.votacionGestor.models.Jurado;
@@ -11,12 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,7 +35,7 @@ import java.util.List;
  * permitiéndoles acceder a su información y a su historial de votaciones.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.3
  */
 @RestController
 @RequestMapping("/api/jurados")
@@ -89,6 +88,90 @@ public class JuradoController {
         return ResponseEntity.ok(JuradoDTO.fromEntity(juradoService.obtenerPorId(id)));
     }
 
+    /**
+     * Obtiene la lista completa de jurados registrados en el sistema.
+     *
+     * <p>Esta operación solo puede realizarla un administrador. Devuelve todos los
+     * jurados existentes, transformados a {@link JuradoDTO} para evitar exponer
+     * información sensible. Si no existen jurados, se devuelve una lista vacía
+     * con estado 200.</p>
+     *
+     * @since v0.3
+     * @return lista de jurados en formato DTO.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<JuradoDTO>> obtenerTodos() {
+
+        List<JuradoDTO> lista = new ArrayList<>();
+        List<Jurado> jurados = juradoService.obtenerTodos();
+
+        for (Jurado jurado : jurados) {
+            lista.add(JuradoDTO.fromEntity(jurado));
+        }
+
+        return ResponseEntity.ok(lista);
+    }
+
+    /**
+     * Permite que un jurado edite únicamente sus propios datos.
+     *
+     * <p>La verificación se realiza mediante la expresión de seguridad
+     * {@code @seguridadJurado.esElMismoJurado(#idJurado)}, que garantiza que el
+     * usuario autenticado coincide con el jurado cuyo identificador se recibe en
+     * la ruta. Si el jurado no existe, se devuelve un estado 404. Si la edición
+     * es válida, se devuelve el jurado actualizado con estado 200.</p>
+     *
+     * @since v0.3
+     * @param idJurado identificador del jurado que desea modificar sus datos.
+     * @param dto datos a actualizar.
+     * @return el jurado actualizado en formato DTO.
+     */
+    @PreAuthorize("@seguridadJurado.esElMismoJurado(#idJurado)")
+    @PutMapping("/{idJurado}")
+    public ResponseEntity<JuradoDTO> editarMisDatos(
+            @PathVariable Long idJurado,
+            @RequestBody EditarJuradoDTO dto) {
+
+        return ResponseEntity.ok(JuradoDTO.fromEntity(juradoService.editarMisDatos(idJurado, dto)));
+    }
+
+    /**
+     * Elimina un jurado del sistema.
+     *
+     * <p>Solo un administrador puede realizar esta acción. Si el jurado no existe,
+     * se devuelve un estado 404. Si la eliminación se completa correctamente,
+     * se devuelve un estado 204 (sin contenido). La eliminación implica retirar
+     * al jurado del sistema de forma permanente.</p>
+     *
+     * @since v0.3
+     * @param idJurado identificador del jurado a eliminar.
+     * @return respuesta sin contenido si la eliminación fue exitosa.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{idJurado}")
+    public ResponseEntity<Void> eliminarJurado(@PathVariable Long idJurado){
+        juradoService.eliminarJurado(idJurado);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Permite que un jurado se retire voluntariamente del sistema.
+     *
+     * <p>La operación solo puede realizarla el propio jurado, verificado mediante
+     * la expresión de seguridad {@code #idJurado == authentication.principal.idUsuario}.
+     * Si el jurado no existe, se devuelve un estado 404. Si la retirada se completa,
+     * se devuelve el jurado actualizado con estado 200.</p>
+     *
+     * @since v0.3
+     * @param idJurado identificador del jurado que desea retirarse.
+     * @return el jurado actualizado tras marcarse como retirado.
+     */
+    @PreAuthorize("#idJurado == authentication.principal.idUsuario")
+    @PutMapping("/{idJurado}/retirarse")
+    public ResponseEntity<JuradoDTO> retirarse(@PathVariable Long idJurado) {
+        return ResponseEntity.ok(JuradoDTO.fromEntity(juradoService.retirarse(idJurado)));
+    }
     /**
      * Endpoint para obtener las votaciones realizadas por el jurado autenticado.
      * Solo accesible para usuarios con rol JURADO.

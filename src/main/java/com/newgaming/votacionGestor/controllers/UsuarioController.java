@@ -14,6 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Controlador encargado de gestionar las operaciones relacionadas con los usuarios
  * dentro del sistema de votación. Permite registrar nuevos usuarios y obtener
@@ -31,7 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
  * garantizando un acceso seguro y estructurado a la información.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.3
  */
 @RestController
 @RequestMapping("/api/usuarios")
@@ -122,5 +125,30 @@ public class UsuarioController {
 
         Usuario u = usuarioService.obtenerPorId(id);
         return ResponseEntity.ok(UsuarioDTO.fromEntity(u));
+    }
+
+    /**
+     * Obtiene la lista completa de usuarios registrados en el sistema.
+     *
+     * <p>Esta operación solo puede realizarla un administrador. Devuelve todos los
+     * usuarios existentes transformados a {@link UsuarioDTO}, evitando exponer
+     * información sensible del modelo interno. Si no existen usuarios, se devuelve
+     * una lista vacía con estado 200.</p>
+     *
+     * @since v0.3
+     * @return lista de usuarios en formato DTO.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<UsuarioDTO>> obtenerTodos() {
+
+        List<Usuario> usuarios = usuarioService.obtenerTodos();
+        List<UsuarioDTO> lista = new ArrayList<>();
+
+        for (Usuario usuario : usuarios) {
+            lista.add(UsuarioDTO.fromEntity(usuario));
+        }
+
+        return ResponseEntity.ok(lista);
     }
 }

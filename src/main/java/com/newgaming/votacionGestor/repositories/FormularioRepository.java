@@ -34,7 +34,7 @@ import java.util.Optional;
  *     asociado a un evento específico, si existe.</li>
  * </ul>
  *
- * @version 0.1
+ * @version v0.3
  * @author Guillermo Martín Chippirraz
  */
 @Repository
@@ -43,8 +43,22 @@ public interface FormularioRepository extends JpaRepository<Formulario, Long> {
     /**
      * Busca el formulario asociado a un evento concreto.
      *
+     * @since v0.1
      * @param idEvento identificador del evento.
      * @return un {@link Optional} que contiene el formulario si existe.
      */
     Optional<Formulario> findByEventoIdEvento(Long idEvento);
+
+    /**
+     * Elimina todas las entidades asociadas a un evento específico.
+     *
+     * <p>Este método borra todos los registros cuya relación apunte al evento
+     * identificado por {@code idEvento}. Se utiliza normalmente cuando un evento
+     * es eliminado del sistema y es necesario limpiar sus dependencias para
+     * mantener la integridad referencial.</p>
+     *
+     * @since v0.3
+     * @param idEvento identificador del evento cuyos registros asociados deben eliminarse.
+     */
+    void deleteByEventoIdEvento(Long idEvento);
 }

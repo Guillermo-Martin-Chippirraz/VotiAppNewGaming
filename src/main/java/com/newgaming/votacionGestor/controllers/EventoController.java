@@ -1,6 +1,7 @@
 package com.newgaming.votacionGestor.controllers;
 
 import com.newgaming.votacionGestor.DTO.CrearEventoDTO;
+import com.newgaming.votacionGestor.DTO.EditarEventoDTO;
 import com.newgaming.votacionGestor.DTO.EventoDTO;
 import com.newgaming.votacionGestor.models.Administrador;
 import com.newgaming.votacionGestor.models.Evento;
@@ -33,7 +34,7 @@ import java.time.LocalDateTime;
  * que serán evaluados por los jurados.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.3
  */
 @RestController
 @RequestMapping("/api/eventos")
@@ -97,6 +98,46 @@ public class EventoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(EventoDTO.fromEntity(creado));
     }
 
+    /**
+     * Actualiza los datos de un evento existente.
+     *
+     * <p>Esta operación solo puede realizarla un administrador. Permite modificar
+     * la información básica del evento identificado por {@code idEvento}. Si el
+     * evento no existe, se devuelve un estado 404. Si la actualización se completa
+     * correctamente, se devuelve el evento actualizado con estado 200.</p>
+     *
+     * @since v0.3
+     * @param idEvento identificador del evento a actualizar.
+     * @param dto datos que se desean modificar en el evento.
+     * @return el evento actualizado.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{idEvento}")
+    public ResponseEntity<Evento> editarEvento(
+            @PathVariable Long idEvento,
+            @RequestBody EditarEventoDTO dto) {
+
+        return ResponseEntity.ok(eventoService.editarEvento(idEvento, dto));
+    }
+
+    /**
+     * Elimina un evento del sistema.
+     *
+     * <p>Solo un administrador puede realizar esta acción. Si el evento no existe,
+     * se devuelve un estado 404. Si la eliminación se realiza correctamente,
+     * se devuelve un estado 204 (sin contenido). La eliminación implica retirar
+     * el evento por completo del sistema, incluyendo sus asociaciones.</p>
+     *
+     * @since v0.3
+     * @param idEvento identificador del evento a eliminar.
+     * @return respuesta sin contenido si la eliminación fue exitosa.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{idEvento}")
+    public ResponseEntity<Void> eliminarEvento(@PathVariable Long idEvento) {
+        eventoService.eliminarEvento(idEvento);
+        return ResponseEntity.noContent().build();
+    }
 
     /**
      * Endpoint para habilitar un evento.

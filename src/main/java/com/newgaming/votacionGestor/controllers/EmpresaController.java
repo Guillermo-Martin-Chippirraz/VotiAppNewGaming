@@ -1,5 +1,6 @@
 package com.newgaming.votacionGestor.controllers;
 
+import com.newgaming.votacionGestor.DTO.EditarEmpresaDTO;
 import com.newgaming.votacionGestor.models.Administrador;
 import com.newgaming.votacionGestor.models.Empresa;
 import com.newgaming.votacionGestor.services.AdministradorService;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
  * evaluados por los jurados.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.3
  */
 @RestController
 @RequestMapping("/api/empresa")
@@ -86,6 +87,46 @@ public class EmpresaController {
     }
 
     /**
+     * Actualiza los datos de una empresa existente.
+     *
+     * <p>Solo un administrador puede modificar la información de una empresa.
+     * Si la empresa no existe, se devuelve un estado 404. Si la actualización
+     * se realiza correctamente, se devuelve la entidad actualizada con estado 200.</p>
+     *
+     * @since v0.3
+     * @param idEmpresa identificador de la empresa a actualizar.
+     * @param dto datos a modificar en la empresa.
+     * @return la empresa actualizada.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{idEmpresa}")
+    public ResponseEntity<Empresa> editarEmpresa(
+            @PathVariable Long idEmpresa,
+            @RequestBody EditarEmpresaDTO dto) {
+
+        Empresa empresaActualizada = empresaService.editarEmpresa(idEmpresa, dto);
+        return ResponseEntity.ok(empresaActualizada);
+    }
+
+    /**
+     * Elimina una empresa del sistema.
+     *
+     * <p>Solo un administrador puede realizar esta acción. Si la empresa no existe,
+     * se devuelve un estado 404. Si la eliminación se completa correctamente,
+     * se devuelve un estado 204 (sin contenido).</p>
+     *
+     * @since v0.3
+     * @param idEmpresa identificador de la empresa a eliminar.
+     * @return respuesta sin contenido si la eliminación fue exitosa.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{idEmpresa}")
+    public ResponseEntity<Void> eliminarEmpresa(@PathVariable Long idEmpresa) {
+        empresaService.eliminarEmpresa(idEmpresa);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Endpoint para asignar una empresa a un evento.
      * Solo accesible para usuarios con rol ADMIN.
      *
@@ -114,5 +155,29 @@ public class EmpresaController {
         eventoEmpresaService.asignarEmpresa(idEvento, idEmpresa);
 
         return ResponseEntity.ok("Empresa asignada correctamente al evento");
+    }
+
+    /**
+     * Retira una empresa de un evento activo.
+     *
+     * <p>Esta operación solo puede realizarla un administrador. La retirada implica
+     * eliminar la participación de la empresa en el evento indicado, sin borrar
+     * la empresa del sistema. Si la empresa o el evento no existen, se devuelve
+     * un estado 404. Si la retirada se completa correctamente, se devuelve un
+     * estado 204 (sin contenido).</p>
+     *
+     * @since v0.3
+     * @param idEmpresa identificador de la empresa que se desea retirar del evento.
+     * @param idEvento identificador del evento del cual se retira la empresa.
+     * @return respuesta sin contenido si la retirada fue exitosa.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{idEmpresa}/retirar/{idEvento}")
+    public ResponseEntity<Void> retirarEmpresa(
+            @PathVariable Long idEmpresa,
+            @PathVariable Long idEvento) {
+
+        empresaService.retirarEmpresaDeEvento(idEvento, idEmpresa);
+        return ResponseEntity.noContent().build();
     }
 }

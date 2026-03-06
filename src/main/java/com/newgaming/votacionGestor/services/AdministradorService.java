@@ -7,6 +7,7 @@ import com.newgaming.votacionGestor.repositories.AdministradorRepository;
 import com.newgaming.votacionGestor.repositories.JuradoRepository;
 import com.newgaming.votacionGestor.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Service;
  * componente de servicio dentro del contexto de la aplicación.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.3
  */
 @Service
 public class AdministradorService {
@@ -41,6 +42,8 @@ public class AdministradorService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     /**
      * Obtiene un administrador por su identificador.
      *
@@ -90,21 +93,27 @@ public class AdministradorService {
 
 
     /**
-     * Registra un nuevo jurado y lo asocia al administrador que realiza el registro.
+     * Registra un nuevo jurado en el sistema y lo asocia al administrador que realiza el registro.
      *
-     * <p>Este método:</p>
+     * <p>Este método realiza las siguientes acciones:</p>
      * <ul>
-     *     <li>Asigna el administrador como responsable del registro.</li>
-     *     <li>Guarda el jurado en la base de datos.</li>
+     *     <li>Asigna al administrador como responsable del registro del jurado.</li>
+     *     <li>Encripta la contraseña del jurado antes de almacenarla.</li>
+     *     <li>Guarda el nuevo jurado en la base de datos.</li>
      * </ul>
      *
+     * <p>El método garantiza que la contraseña nunca se almacene en texto plano,
+     * cumpliendo con las buenas prácticas de seguridad.</p>
+     *
      * @since v0.1
-     * @param jurado jurado a registrar.
+     * @param jurado jurado que se desea registrar.
      * @param admin administrador que realiza el registro.
-     * @return el jurado registrado.
+     * @return el jurado registrado y persistido en la base de datos.
      */
     public Jurado registrarJurado(Jurado jurado, Administrador admin) {
+
         jurado.setAdminRegistro(admin);
+        jurado.setPassword(passwordEncoder.encode(jurado.getPassword()));
         return juradoRepository.save(jurado);
     }
 }

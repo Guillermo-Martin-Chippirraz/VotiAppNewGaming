@@ -1,6 +1,7 @@
 package com.newgaming.votacionGestor.services;
 
 import com.newgaming.votacionGestor.DTO.CrearUsuarioDTO;
+import com.newgaming.votacionGestor.components.VerificacionAdmin;
 import com.newgaming.votacionGestor.models.Administrador;
 import com.newgaming.votacionGestor.models.Jurado;
 import com.newgaming.votacionGestor.models.Usuario;
@@ -9,9 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,7 +37,7 @@ import java.util.Optional;
  * un componente de servicio dentro del contexto de la aplicación.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.3
  */
 @Service
 public class UsuarioService {
@@ -132,5 +135,25 @@ public class UsuarioService {
                         HttpStatus.NOT_FOUND,
                         "Usuario no encontrado"
                 ));
+    }
+    /**
+     * Obtiene la lista completa de usuarios registrados en el sistema.
+     *
+     * <p>La operación se ejecuta en modo de solo lectura y únicamente puede ser
+     * realizada por administradores. Si el usuario autenticado no es administrador,
+     * se devuelve un estado 403.</p>
+     *
+     * <p>En caso de autorización válida, se devuelve la lista completa de entidades
+     * {@link Usuario} almacenadas en el repositorio.</p>
+     *
+     * @since v0.3
+     * @return lista de todos los usuarios existentes.
+     * @throws ResponseStatusException si el usuario no es administrador.
+     */
+    @Transactional(readOnly = true)
+    public List<Usuario> obtenerTodos() {
+        if (VerificacionAdmin.esAdmin())
+            return usuarioRepository.findAll();
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sólo los administradores pueden revisar todos los usuarios.");
     }
 }

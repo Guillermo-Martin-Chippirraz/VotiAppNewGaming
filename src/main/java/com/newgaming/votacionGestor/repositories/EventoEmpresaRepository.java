@@ -36,7 +36,7 @@ import java.util.List;
  * generar automáticamente las consultas necesarias.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.3
  */
 @Repository
 public interface EventoEmpresaRepository extends JpaRepository<EventoEmpresa, EventoEmpresaId> {
@@ -44,6 +44,7 @@ public interface EventoEmpresaRepository extends JpaRepository<EventoEmpresa, Ev
     /**
      * Obtiene todas las relaciones Evento-Empresa asociadas a un evento concreto.
      *
+     * @since v0.1
      * @param idEvento identificador del evento.
      * @return lista de relaciones correspondientes al evento.
      */
@@ -52,8 +53,34 @@ public interface EventoEmpresaRepository extends JpaRepository<EventoEmpresa, Ev
     /**
      * Obtiene todas las relaciones Evento-Empresa asociadas a una empresa concreta.
      *
+     * @since v0.1
      * @param idEmpresa identificador de la empresa.
      * @return lista de relaciones correspondientes a la empresa.
      */
     List<EventoEmpresa> findByIdIdEmpresa(Long idEmpresa);
+
+    /**
+     * Elimina todas las entidades asociadas a una empresa específica.
+     *
+     * <p>Este método elimina los registros cuya relación apunte a la empresa
+     * identificada por {@code idEmpresa}. Se utiliza normalmente cuando una empresa
+     * es eliminada del sistema y es necesario limpiar sus dependencias.</p>
+     *
+     * @since v0.3
+     * @param idEmpresa identificador de la empresa cuyos registros asociados deben eliminarse.
+     */
+    void deleteByEmpresaIdEmpresa(Long idEmpresa);
+
+    /**
+     * Elimina todas las entidades asociadas a un evento específico.
+     *
+     * <p>Este método elimina los registros cuya relación apunte al evento
+     * identificado por {@code idEvento}. Es útil cuando un evento se elimina y se
+     * requiere borrar todas las dependencias vinculadas a él.</p>
+     *
+     * @since v0.3
+     * @param idEvento identificador del evento cuyos registros asociados deben eliminarse.
+     */
+    void deleteByEventoIdEvento(Long idEvento);
+
 }

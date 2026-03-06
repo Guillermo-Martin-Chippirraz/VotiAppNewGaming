@@ -20,7 +20,7 @@ import java.util.List;
  *
  * <p>Define las reglas de acceso, la integración del filtro JWT y la configuración
  * de CORS. Esta clase es detectada automáticamente por Spring gracias a las
- * anotaciones {@link Configuration} y {@link EnableWebSecurity}.</p>
+ * anotaciones {@link Configuration} y {@link EnableMethodSecurity}.</p>
  *
  * <p>Responsabilidades principales:</p>
  * <ul>
@@ -40,10 +40,10 @@ import java.util.List;
  * funcionales propios, sino beans de configuración.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.3
  */
 @Configuration
-@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = false)
 public class SecurityConfig {
 
     @Autowired
