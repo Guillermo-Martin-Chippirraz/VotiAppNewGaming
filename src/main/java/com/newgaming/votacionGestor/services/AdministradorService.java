@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
  * componente de servicio dentro del contexto de la aplicación.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.3
+ * @version v0.4
  */
 @Service
 public class AdministradorService {
@@ -95,25 +95,30 @@ public class AdministradorService {
     /**
      * Registra un nuevo jurado en el sistema y lo asocia al administrador que realiza el registro.
      *
-     * <p>Este método realiza las siguientes acciones:</p>
+     * <p>Este método se encarga de preparar y persistir una nueva entidad {@link Jurado}
+     * aplicando las siguientes acciones:</p>
+     *
      * <ul>
      *     <li>Asigna al administrador como responsable del registro del jurado.</li>
-     *     <li>Encripta la contraseña del jurado antes de almacenarla.</li>
-     *     <li>Guarda el nuevo jurado en la base de datos.</li>
+     *     <li>Encripta la contraseña proporcionada antes de almacenarla en la base de datos.</li>
+     *     <li>Establece el email recibido sin modificarlo (la validación se realiza en capas superiores).</li>
+     *     <li>Guarda la entidad resultante en el repositorio.</li>
      * </ul>
      *
-     * <p>El método garantiza que la contraseña nunca se almacene en texto plano,
-     * cumpliendo con las buenas prácticas de seguridad.</p>
+     * <p>Este proceso garantiza que la contraseña nunca se almacene en texto plano,
+     * cumpliendo con las buenas prácticas de seguridad y manteniendo la integridad
+     * de los datos del sistema.</p>
      *
      * @since v0.1
-     * @param jurado jurado que se desea registrar.
-     * @param admin administrador que realiza el registro.
+     * @param jurado entidad {@code Jurado} que se desea registrar.
+     * @param admin administrador responsable del registro.
      * @return el jurado registrado y persistido en la base de datos.
      */
     public Jurado registrarJurado(Jurado jurado, Administrador admin) {
 
         jurado.setAdminRegistro(admin);
         jurado.setPassword(passwordEncoder.encode(jurado.getPassword()));
+        jurado.setEmail(jurado.getEmail());
         return juradoRepository.save(jurado);
     }
 }

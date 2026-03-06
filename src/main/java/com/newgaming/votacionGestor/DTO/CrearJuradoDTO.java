@@ -1,6 +1,8 @@
 package com.newgaming.votacionGestor.DTO;
 
 import com.newgaming.votacionGestor.models.Jurado;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -23,7 +25,7 @@ import java.util.HashMap;
  * controlado y consistente.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.2
+ * @version v0.4
  */
 public class CrearJuradoDTO {
 
@@ -54,6 +56,27 @@ public class CrearJuradoDTO {
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 6)
     private String password;
+
+    /**
+     * Dirección de correo electrónico del usuario.
+     *
+     * <p>Este campo es obligatorio y debe cumplir con el formato de un email válido.
+     * Además, está marcado como único en la base de datos, por lo que no pueden
+     * existir dos usuarios con la misma dirección de correo.</p>
+     *
+     * <p>Las validaciones aplicadas garantizan que:</p>
+     * <ul>
+     *     <li>El valor no sea nulo ni una cadena en blanco ({@link NotBlank}).</li>
+     *     <li>El formato corresponda a una dirección de correo válida ({@link Email}).</li>
+     *     <li>La base de datos impida duplicados mediante la restricción {@code unique = true}.</li>
+     * </ul>
+     *
+     * @since v0.4
+     */
+    @Column(nullable = false, unique = true)
+    @NotBlank(message = "El email es obligatorio")
+    @Email
+    private String email;
 
     /**
      * Obtiene el nombre de usuario asignado al nuevo jurado.
@@ -95,6 +118,34 @@ public class CrearJuradoDTO {
     }
 
     /**
+     * Obtiene la dirección de correo electrónico del usuario.
+     *
+     * <p>Este valor es obligatorio y debe cumplir con el formato de un email válido.
+     * La anotación {@link NotBlank} garantiza que no sea una cadena vacía, mientras
+     * que la validación {@link Email} asegura que tenga un formato correcto.</p>
+     *
+     * @since v0.4
+     * @return el email del usuario.
+     */
+    public @NotBlank(message = "El email es obligatorio") String getEmail() {
+        return email;
+    }
+
+    /**
+     * Establece la dirección de correo electrónico del usuario.
+     *
+     * <p>El valor proporcionado debe ser un email válido y no puede estar vacío.
+     * Las anotaciones de validación {@link NotBlank} y {@link Email} se aplican
+     * para garantizar que el dato sea correcto antes de ser persistido.</p>
+     *
+     * @since v0.4
+     * @param email dirección de correo electrónico que se asignará al usuario.
+     */
+    public void setEmail(@NotBlank(message = "El email es obligatorio") String email) {
+        this.email = email;
+    }
+
+    /**
      * Establece la contraseña del nuevo jurado.
      *
      * <p>Debe ser un texto no vacío y cumplir con la longitud mínima requerida.
@@ -108,22 +159,24 @@ public class CrearJuradoDTO {
     }
 
     /**
-     * Convierte este DTO en una entidad <code>Jurado</code>.
+     * Convierte este DTO en una entidad {@link Jurado}.
      *
-     * <ol>
-     *     <li>Crea una nueva instancia de <code>Jurado</code>.</li>
-     *     <li>Asigna el nombre de usuario recibido.</li>
-     *     <li>Asigna la contraseña recibida (sin encriptar; la capa de servicio se encarga de ello).</li>
-     *     <li>Establece el rol del usuario como <code>"JURADO"</code>.</li>
-     *     <li>Inicializa el mapa de datos extra como un HashMap vacío.</li>
-     *     <li>Inicializa el email como cadena vacía.</li>
-     * </ol>
+     * <p>Este método construye una nueva instancia de {@code Jurado} utilizando los
+     * datos proporcionados en el DTO. La conversión incluye:</p>
      *
-     * <p>Este método prepara la entidad para ser procesada por la capa de servicio,
+     * <ul>
+     *     <li>Asignar el nombre de usuario recibido.</li>
+     *     <li>Asignar la contraseña tal como llega (la capa de servicio se encargará de encriptarla).</li>
+     *     <li>Establecer el rol del usuario como {@code "JURADO"}.</li>
+     *     <li>Inicializar el mapa de datos extra como un {@link HashMap} vacío.</li>
+     *     <li>Asignar el email recibido.</li>
+     * </ul>
+     *
+     * <p>La entidad resultante queda lista para ser procesada por la capa de servicio,
      * donde se aplicarán validaciones adicionales y la encriptación de la contraseña.</p>
      *
      * @since v0.1
-     * @return entidad <code>Jurado</code> lista para ser persistida.
+     * @return una entidad {@code Jurado} construida a partir de este DTO.
      */
     public Jurado toEntity() {
         Jurado j = new Jurado();
@@ -131,7 +184,7 @@ public class CrearJuradoDTO {
         j.setPassword(password);
         j.setRol("JURADO");
         j.setDatosExtra(new HashMap<>());
-        j.setEmail("");
+        j.setEmail(email);
         return j;
     }
 

@@ -5,7 +5,9 @@ import com.newgaming.votacionGestor.DTO.TokenResponse;
 import com.newgaming.votacionGestor.components.JwtUtil;
 import com.newgaming.votacionGestor.models.Usuario;
 import com.newgaming.votacionGestor.services.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
  * de recursos mediante autenticación basada en JWT.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version 0.1
+ * @version v0.4
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -37,6 +39,9 @@ public class AuthController {
 
     private final UsuarioService usuarioService;
     private final JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Constructor por parámetros.
@@ -48,7 +53,7 @@ public class AuthController {
      *     <li>Asigna UsuarioService para buscar usuarios en la base de datos.</li>
      * </ol>
      *
-     * @since 0.1
+     * @since v0.1
      * @param jwtUtil utilidad para manejo de JWT.
      * @param usuarioService servicio para gestión de usuarios.
      */
@@ -58,29 +63,34 @@ public class AuthController {
     }
 
     /**
-     * Endpoint de login.
-     * Valida las credenciales del usuario y genera un token JWT si son correctas.
+     * Autentica a un usuario y genera un token JWT si las credenciales son válidas.
      *
-     * <ol>
-     *     <li>Recibe un objeto LoginRequest con username y password.</li>
-     *     <li>Busca al usuario en la base de datos mediante su username.</li>
-     *     <li>Si no existe, lanza una excepción de credenciales inválidas.</li>
-     *     <li>Compara la contraseña recibida con la almacenada.</li>
-     *     <li>Si no coinciden, lanza una excepción de credenciales inválidas.</li>
-     *     <li>Genera un token JWT con el username y el rol del usuario.</li>
-     *     <li>Devuelve el token encapsulado en un TokenResponse.</li>
-     * </ol>
+     * <p>Este endpoint procesa una solicitud de inicio de sesión realizando las siguientes acciones:</p>
      *
-     * @since 0.1
-     * @param request DTO con las credenciales del usuario.
-     * @return objeto TokenResponse con el token generado.
+     * <ul>
+     *     <li>Recibe un {@link LoginRequest} con el nombre de usuario y la contraseña.</li>
+     *     <li>Busca al usuario correspondiente en la base de datos.</li>
+     *     <li>Si no existe, se devuelve un error de credenciales inválidas.</li>
+     *     <li>Verifica que la contraseña proporcionada coincida con la almacenada.</li>
+     *     <li>Si la contraseña no coincide, se devuelve un error de credenciales inválidas.</li>
+     *     <li>Genera un token JWT que incluye el nombre de usuario y el rol asociado.</li>
+     *     <li>Devuelve el token encapsulado en un {@link TokenResponse}.</li>
+     * </ul>
+     *
+     * <p>Este método no establece sesión en el servidor; simplemente devuelve un token
+     * que el cliente deberá enviar en las siguientes solicitudes.</p>
+     *
+     * @since v0.1
+     * @param request objeto con las credenciales del usuario.
+     * @return una respuesta HTTP 200 con el token JWT generado.
+     * @throws RuntimeException si las credenciales son inválidas.
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         Usuario usuario = usuarioService.buscarPorUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
 
-        if (!usuario.getPassword().equals(request.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
             throw new RuntimeException("Credenciales inválidas");
         }
 
@@ -88,4 +98,5 @@ public class AuthController {
 
         return ResponseEntity.ok(new TokenResponse(token));
     }
+
 }
