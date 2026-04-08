@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://localhost:8443/api",
+    //Cuando HTTPS, cambiar puerto a 8443
+    baseURL: "http://localhost:8080/api",
     withCredentials: false,
 });
 

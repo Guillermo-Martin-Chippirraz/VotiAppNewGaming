@@ -40,7 +40,7 @@ import java.util.List;
  * funcionales propios, sino beans de configuración.</p>
  *
  * @author Guillermo Martín Chippirraz
- * @version v0.3
+ * @version v0.6.5
  */
 @Configuration
 @EnableMethodSecurity(prePostEnabled = false)
@@ -63,13 +63,13 @@ public class SecurityConfig {
      * @param http objeto de configuración de seguridad HTTP.
      * @return cadena de filtros configurada.
      * @throws Exception si ocurre un error durante la configuración.
-     * @since v0.1
+     * @since v0.6.5
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated()
@@ -95,8 +95,14 @@ public class SecurityConfig {
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        //Para activar https y el CORS es necesario cambiar el puerto del server a 8443 y activar SSL en application.properties
+        /*
+            En application.properties:
+                server.port=8443
+                server.ssl.enabled=true
+         */
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
