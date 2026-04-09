@@ -1,0 +1,30 @@
+.home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background: var(--color-primary-light);
+    text-align: center;
+}
+
+.home-logo {
+    width: 90px;
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.home-iso {
+    width: 20px;
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.home-title {
+    font-family: var(--font-archive);
+    font-size: 1.3rem;
+    color: var(--color-secondary-1);
+    margin-bottom: 3rem;
+    max-width: 600px;
+}

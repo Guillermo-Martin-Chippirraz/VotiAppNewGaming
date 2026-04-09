@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom"
 import { StartButton } from "../components/StartButton";
-
+import ISOTIPO from "../assets/images/LOGO.webp";
+import LOGOTIPO from "../assets/images/NEWGAMING.webp";
+import "../HomePage.css";
 export const HomePage = () => {
     const navigate = useNavigate();
 
@@ -9,20 +11,20 @@ export const HomePage = () => {
     };
 
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                flexDirection: "column",
-            }}
-        >
+        <div className="home-container">
             <header
                 style={{
                     padding: "1rem",
                     textAlign: "center",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "1rem",
                 }}
             >
-                <h1>Imagotipo</h1>
+                <img src={ISOTIPO} alt="Isotipo NewGaming" className="home-iso"/>
+                <img src={LOGOTIPO} alt="Logotipo NewGaming" className="home-logo" />
             </header>
 
             <main
@@ -36,7 +38,7 @@ export const HomePage = () => {
                     textAlign: "center",
                 }}
             >
-                <h2>¡Toca para empezar!</h2>
+                <h2 className="home-title">¡Toca para empezar!</h2>
 
                 <div style={{ marginTop: "2rem" }}>
                     <StartButton onClick={handleStart} />

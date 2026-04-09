@@ -2,7 +2,7 @@ import { LoginForm } from "../components/LoginForm"
 
 export const LoginPage = () => {
     return (
-        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <div className="layout-center">
             {/* Header */}
             <header style={{ padding: "1rem" }}>
                 <h2>Bienvenido/a de nuevo</h2>

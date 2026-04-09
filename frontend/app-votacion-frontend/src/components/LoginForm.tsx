@@ -23,6 +23,7 @@ export const LoginForm = () => {
             }}
         >
             <input
+                className="input"
                 type="text"
                 placeholder="Nombre de usuario"
                 value={username}
@@ -32,6 +33,7 @@ export const LoginForm = () => {
             />
 
             <input
+                className="input"
                 type="password"
                 placeholder="Contraseña"
                 value={password}
@@ -40,7 +42,7 @@ export const LoginForm = () => {
                 style={{ width: "100%" }}
             />
 
-            <button type="submit" disabled={state.loading}>
+            <button className="btn-primary" type="submit" disabled={state.loading}>
                 {state.loading ? "Entrando..." : "Entrar"}
             </button>
         </form>
