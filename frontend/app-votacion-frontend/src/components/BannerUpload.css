@@ -1,0 +1,23 @@
+.banner-upload-contenedor {
+  width: 100%;
+  padding: 0 16px;
+  margin-bottom: 32px;
+}
+
+.banner-upload-area {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  background-color: #E7498E;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.banner-upload-area img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}

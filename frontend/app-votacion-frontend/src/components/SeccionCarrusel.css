@@ -1,0 +1,53 @@
+.seccion-frame {
+  margin-bottom: 32px;
+  position: relative;
+  font-family: 'Roboto', sans-serif;
+  padding-bottom: 24px;
+  max-width: 100%;
+}
+
+.titulo-seccion {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  cursor: pointer;
+  text-align: left;
+  color: #FFFFFF;
+}
+
+.separador-celeste {
+  border: none;
+  height: 2px;
+  background-color: #4DE2C4;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.carrusel-contenedor {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+
+.carrusel-contenedor::-webkit-scrollbar {
+  display: none;
+}
+
+.contenedor-flecha {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 24px;
+  height: 24px;
+  z-index: 2;
+}
+
+.contenedor-flecha img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: rotate(-90deg);
+}

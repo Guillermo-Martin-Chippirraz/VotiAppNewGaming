@@ -1,0 +1,66 @@
+@font-face {
+  font-family: 'Roboto';
+  src: url('/src/assets/fonts/Roboto.ttf') format('truetype');
+}
+
+.selector-contenedor {
+  width: 100%;
+  padding: 0 16px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.selector-trigger {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 2px solid #4DE2C4;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #FFFFFF;
+  font-family: 'Roboto', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.selector-trigger:focus {
+  box-shadow: 0 0 8px rgba(77, 226, 196, 0.5);
+}
+
+.selector-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 16px;
+  right: 16px;
+  background-color: #222222;
+  border-radius: 8px;
+  z-index: 20;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.selector-item {
+  padding: 12px 16px;
+  color: #FFFFFF;
+  font-family: 'Roboto', sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 1px solid #4DE2C4;
+  transition: background-color 0.2s;
+}
+
+.selector-item:hover {
+  background-color: #383838;
+}
+
+.selector-item:last-child {
+  border-bottom: none;
+}
+
+.item-crear {
+  color: #4DE2C4;
+}

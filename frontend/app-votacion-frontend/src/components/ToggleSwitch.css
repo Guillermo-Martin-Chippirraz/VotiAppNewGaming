@@ -1,0 +1,31 @@
+.toggle-contenedor-ext {
+  width: 100%;
+  padding: 0 16px;
+  margin-bottom: 24px;
+}
+
+.toggle-base {
+  width: 100%;
+  display: flex;
+  border: 2px solid #4DE2C4;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.toggle-boton {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  color: #FFFFFF;
+  font-family: 'Roboto', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toggle-boton.activo {
+  background-color: #E7498E;
+}

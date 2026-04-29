@@ -1,0 +1,38 @@
+@font-face {
+  font-family: 'Roboto';
+  src: url('../assets/fonts/Roboto.ttf') format('truetype');
+}
+
+.item-carrusel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+}
+
+.imagen-contenedor {
+  width: 80px;
+  height: 80px;
+  background-color: #E7498E;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.imagen-contenedor img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.nombre-item {
+  font-size: 14px;
+  text-align: center;
+  color: #FFFFFF;
+  font-weight: bold;
+}
