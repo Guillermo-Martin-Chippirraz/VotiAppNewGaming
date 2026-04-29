@@ -1,4 +1,4 @@
-import "../StartButton.css";
+import "./StartButton.css";
 import BOTON from "../assets/images/BOTON.webp";
 
 interface StartButtonProps {

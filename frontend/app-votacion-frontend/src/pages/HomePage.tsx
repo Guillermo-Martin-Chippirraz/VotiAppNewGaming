@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom"
 import { StartButton } from "../components/StartButton";
 import ISOTIPO from "../assets/images/LOGO.webp";
 import LOGOTIPO from "../assets/images/NEWGAMING.webp";
-import "../HomePage.css";
+import "./HomePage.css";
+
 export const HomePage = () => {
     const navigate = useNavigate();
 
