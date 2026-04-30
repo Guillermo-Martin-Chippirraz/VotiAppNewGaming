@@ -1,14 +1,13 @@
 .seccion-frame {
   margin-bottom: 32px;
   position: relative;
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-roboto);
   padding-bottom: 24px;
   max-width: 100%;
 }
 
 .titulo-seccion {
   font-size: 28px;
-  font-weight: bold;
   margin: 0 0 8px 0;
   cursor: pointer;
   text-align: left;

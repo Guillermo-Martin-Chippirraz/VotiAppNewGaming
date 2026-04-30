@@ -74,14 +74,3 @@ button {
 .logo-small {
   width: 120px;
 }
-
-
-@media (max-width: 768px) {
-  body {
-    background-image: url("/src/assets/images/FONDO.webp");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
-}

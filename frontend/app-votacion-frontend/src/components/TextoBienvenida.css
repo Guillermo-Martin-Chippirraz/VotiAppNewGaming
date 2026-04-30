@@ -1,10 +1,5 @@
-@font-face {
-  font-family: 'Archive';
-  src: url('../assets/fonts/Archive.ttf') format('truetype');
-}
-
 .texto-bienvenida {
-  font-family: 'Archive', sans-serif;
+  font-family: var(--font-archive);
   font-size: 24px;
   color: #4DE2C4;
   margin: 16px 0;

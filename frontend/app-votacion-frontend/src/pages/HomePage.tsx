@@ -12,36 +12,15 @@ export const HomePage = () => {
     };
 
     return (
-        <div className="home-container">
-            <header
-                style={{
-                    padding: "1rem",
-                    textAlign: "center",
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "1rem",
-                }}
-            >
+        <div className="pantalla-movil-base home-container">
+            <header className="home-header">
                 <img src={ISOTIPO} alt="Isotipo NewGaming" className="home-iso"/>
                 <img src={LOGOTIPO} alt="Logotipo NewGaming" className="home-logo" />
             </header>
 
-            <main
-                style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: "1rem",
-                    textAlign: "center",
-                }}
-            >
+            <main className="home-main">
                 <h2 className="home-title">¡Toca para empezar!</h2>
-
-                <div style={{ marginTop: "2rem" }}>
+                <div className="home-button-wrapper">
                     <StartButton onClick={handleStart} />
                 </div>
             </main>

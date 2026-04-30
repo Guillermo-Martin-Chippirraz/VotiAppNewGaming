@@ -1,13 +1,8 @@
-@font-face {
-  font-family: 'Roboto';
-  src: url('/src/assets/fonts/Roboto.ttf') format('truetype');
-}
-
 .etiqueta-id-contenedor {
   width: 100%;
   text-align: center;
   color: #4DE2C4;
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-roboto);
   font-weight: bold;
   font-size: 16px;
   margin-top: 16px;

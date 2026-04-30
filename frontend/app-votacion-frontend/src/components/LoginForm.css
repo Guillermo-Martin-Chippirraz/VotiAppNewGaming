@@ -1,0 +1,16 @@
+.login-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.login-btn-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.login-btn-wrapper .btn-primary {
+    width: 75%;
+    text-transform: uppercase;
+}
